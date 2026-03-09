@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
-import { getApplications } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
 import {
   BarChart3,
   Users,
   Briefcase,
   Activity,
-  ChevronRight,
   ArrowUpRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../../firebase";
+import { getApplicationsByJobIds } from "../../services/applicationService";
+import { getCompanyPostings } from "../../services/postingService";
 
 export default function CompanyOverview() {
   const { user } = useAuth();
@@ -20,29 +18,28 @@ export default function CompanyOverview() {
 
   useEffect(() => {
     const loadData = async () => {
-      // Get jobs posted by this company only
-      const q = query(
-        collection(db, "jobs"),
-        where("companyId", "==", auth.currentUser.uid),
-      );
-      const snap = await getDocs(q);
-      const jobs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (!user?.uid) return;
 
-      // Get all applications
-      const allApps = getApplications();
-
-      // Filter applications: only show those for jobs posted by this company
+      const jobs = await getCompanyPostings(user.uid);
       const jobIds = jobs.map((job) => job.id);
-      const filteredApps = allApps.filter((app) => jobIds.includes(app.jobId));
+      const filteredApps = await getApplicationsByJobIds(jobIds);
 
       setStats({
-        activeJobs: jobs.filter((j) => j.active !== false).length,
+        activeJobs: jobs.filter((j) => j.status === "active").length,
         candidates: filteredApps.length,
       });
-      setRecentApps(filteredApps.slice(-3).reverse());
+      setRecentApps(
+        filteredApps
+          .sort(
+            (a, b) =>
+              (b.dateApplied?.seconds || 0) - (a.dateApplied?.seconds || 0),
+          )
+          .slice(0, 3),
+      );
     };
+
     loadData();
-  }, []);
+  }, [user?.uid]);
 
   const cards = [
     {

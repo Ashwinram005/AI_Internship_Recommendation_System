@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useVoice } from "../../context/VoiceContext";
 import { startVoiceRecognition } from "../../services/voiceService";
 import { Mic } from "lucide-react";
+import { getProfileDisplayName, getProfileInitials } from "../../routes/routeUtils";
 
 export default function Sidebar({ links, title, roleLabel }) {
   const { logout, user } = useAuth();
@@ -16,6 +17,9 @@ export default function Sidebar({ links, title, roleLabel }) {
       setIsListening(false);
     });
   };
+
+  const displayName = getProfileDisplayName(user);
+  const initials = getProfileInitials(user);
 
   return (
     <aside className="sidebar-premium">
@@ -82,7 +86,25 @@ export default function Sidebar({ links, title, roleLabel }) {
       )}
 
       {/* Logout */}
-      <div className="pt-4 mt-4 border-t border-slate-200 px-2">
+      <div className="pt-4 mt-4 border-t border-slate-200 px-2 space-y-3">
+        <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-200">
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={displayName}
+              className="w-9 h-9 rounded-full object-cover border border-slate-200"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xs font-semibold text-indigo-600">
+              {initials}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-slate-700 truncate">{displayName}</p>
+            <p className="text-xs text-slate-400 truncate">{user?.email || roleLabel}</p>
+          </div>
+        </div>
+
         <button
           onClick={logout}
           className="nav-link w-full text-slate-400 hover:text-red-500 hover:bg-red-50"

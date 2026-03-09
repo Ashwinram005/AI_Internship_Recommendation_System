@@ -1,18 +1,33 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, Brain, ArrowRight } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase";
+import { getDefaultRouteByRole } from "../routes/routeUtils";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, resolveUserProfile } = useAuth();
+
+  useEffect(() => {
+    sessionStorage.removeItem("auth_redirect_suppressed");
+
+    const routedNotice = location.state?.authNotice;
+    const sessionNotice = sessionStorage.getItem("auth_notice");
+    const notice = routedNotice || sessionNotice;
+
+    if (notice) {
+      setError(notice);
+      sessionStorage.removeItem("auth_notice");
+    }
+  }, [location.state]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,37 +40,33 @@ function Login() {
         password,
       );
 
-      let userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
-      let userData = null;
-      let userRole = null;
-
-      if (userDoc.exists()) {
-        userRole = userDoc.data().role;
-        userData = { uid: userCredential.user.uid, email, role: userRole };
-      } else {
-        const companyDoc = await getDoc(
-          doc(db, "companies", userCredential.user.uid),
-        );
-        if (companyDoc.exists()) {
-          userRole = "company";
-          userData = { uid: userCredential.user.uid, email, role: userRole };
-        } else {
-          userRole = "user";
-          userData = { uid: userCredential.user.uid, email, role: userRole };
-        }
-      }
-
-      login(userData);
-
-      if (userRole === "user") navigate("/user");
-      else if (userRole === "company") navigate("/company");
-      else if (userRole === "admin") navigate("/admin");
-      else navigate("/");
+      const appUser = await resolveUserProfile(userCredential.user);
+      login(appUser);
+      navigate(getDefaultRouteByRole(appUser.role), { replace: true });
     } catch (err) {
       console.error(err);
       setError(err.message || "Login failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+
+      const userCredential = await signInWithPopup(auth, provider);
+      const appUser = await resolveUserProfile(userCredential.user);
+      login(appUser);
+      navigate(getDefaultRouteByRole(appUser.role), { replace: true });
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Google sign-in failed");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -151,6 +162,24 @@ function Login() {
                   Sign in <ArrowRight size={16} />
                 </span>
               )}
+            </button>
+
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400">or</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="saas-btn saas-btn-secondary w-full py-3 rounded-xl text-sm"
+            >
+              {googleLoading ? "Connecting to Google..." : "Continue with Google"}
             </button>
           </form>
 

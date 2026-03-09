@@ -145,11 +145,11 @@ const VOICE_COMMANDS = {
 
 export const VoiceProvider = ({ children }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isListening, setIsListening] = useState(false);
   const [lastCommand, setLastCommand] = useState("");
 
-  const handleVoiceCommand = (text) => {
+  const handleVoiceCommand = async (text) => {
     console.log("Voice command recognized:", text);
     setLastCommand(text);
 
@@ -207,7 +207,7 @@ export const VoiceProvider = ({ children }) => {
 
       case "logout":
         speakResponse(command.feedback);
-        localStorage.clear();
+        await logout();
         navigate("/");
         break;
 

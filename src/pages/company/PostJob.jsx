@@ -1,18 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { Briefcase, MapPin, Send, AlertCircle, Sparkles } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function PostJob() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [job, setJob] = useState({
+    type: "job",
     title: "",
-    company: "",
+    company: user?.name || "",
     skills: "",
     description: "",
     deadline: "",
   });
+
+  useEffect(() => {
+    if (user?.name) {
+      setJob((prev) => ({ ...prev, company: prev.company || user.name }));
+    }
+  }, [user?.name]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +30,7 @@ export default function PostJob() {
       ...job,
       companyId: auth.currentUser.uid,
       createdAt: serverTimestamp(),
+      status: "active",
       active: true,
     });
     navigate("/company/manage-jobs");
@@ -49,6 +59,20 @@ export default function PostJob() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-slate-600">
+                Posting Type
+              </label>
+              <select
+                value={job.type}
+                onChange={(e) => setJob({ ...job, type: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900"
+              >
+                <option value="job">Job</option>
+                <option value="internship">Internship</option>
+              </select>
+            </div>
+
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium text-slate-600">
                 Job Title

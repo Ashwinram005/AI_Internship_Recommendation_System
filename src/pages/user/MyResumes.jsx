@@ -4,36 +4,54 @@ import {
   Upload,
   FileText,
   Trash2,
-  FilePlus,
-  CheckCircle2,
   Info,
-  Briefcase,
+  UserRound,
+  Mail,
+  Save,
+  Pencil,
+  X,
+  ExternalLink,
 } from "lucide-react";
+import { auth } from "../../firebase";
+import { useAuth } from "../../context/AuthContext";
 import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  query,
-  where,
-  getDocs,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import { auth, db } from "../../firebase";
-import { getApplications } from "../../utils/storage";
-const STEPS = ["Upload", "Processing", "Verified", "Matched"];
+  ALLOWED_RESUME_MIME_TYPES,
+  MAX_RESUME_SIZE_BYTES,
+  getResumesByUser,
+  removeResume,
+  saveResume,
+} from "../../services/resumeService";
+import { getProfileDisplayName, getProfileInitials } from "../../routes/routeUtils";
+import {
+  convertDocToHtml,
+  dataUrlToBlob,
+  isDocResume,
+  isPdfResume,
+  openResumeInNewTab,
+} from "../../utils/resumePreview";
 
 export default function MyResumes() {
+  const { user, updateProfile } = useAuth();
   const [resumes, setResumes] = useState([]);
-  const [activeStep, setActiveStep] = useState(0);
-  const [appliedJobs, setAppliedJobs] = useState([]);
-  const [jobs, setJobs] = useState([]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [displayNameInput, setDisplayNameInput] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const [previewResume, setPreviewResume] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [previewBlobUrl, setPreviewBlobUrl] = useState("");
+  const [previewDocHtml, setPreviewDocHtml] = useState("");
 
   useEffect(() => {
     // load resumes from Firestore when component mounts
     fetchResumes();
-    loadAppliedJobs();
   }, []);
+
+  useEffect(() => {
+    setDisplayNameInput(getProfileDisplayName(user));
+  }, [user?.name, user?.email, user?.role]);
 
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -46,195 +64,381 @@ export default function MyResumes() {
 
   const handleUpload = async (e) => {
     const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    for (let file of files) {
-      const base64 = await convertToBase64(file);
+    setError("");
+    setSuccess("");
 
-      await addDoc(collection(db, "resumes"), {
-        userId: auth.currentUser.uid,
-        fileName: file.name,
-        base64Data: base64,
-        uploadedAt: serverTimestamp(),
-      });
+    const invalidType = files.find(
+      (file) =>
+        !ALLOWED_RESUME_MIME_TYPES.includes(file.type) &&
+        !file.name.toLowerCase().endsWith(".doc") &&
+        !file.name.toLowerCase().endsWith(".docx") &&
+        !file.name.toLowerCase().endsWith(".pdf"),
+    );
+
+    if (invalidType) {
+      setError("Only PDF, DOC, or DOCX files are allowed.");
+      return;
     }
 
-    fetchResumes();
+    const oversized = files.find((file) => file.size > MAX_RESUME_SIZE_BYTES);
+    if (oversized) {
+      setError(
+        `File too large: ${oversized.name}. Max allowed size is ${Math.round(MAX_RESUME_SIZE_BYTES / 1024)} KB for base64 Firestore storage.`,
+      );
+      return;
+    }
+
+    try {
+      for (const file of files) {
+        const base64 = await convertToBase64(file);
+
+        await saveResume({
+          userId: auth.currentUser?.uid,
+          fileName: file.name,
+          base64Data: base64,
+          sizeBytes: file.size,
+          mimeType: file.type || "application/octet-stream",
+        });
+      }
+
+      setSuccess("Resume uploaded successfully.");
+      e.target.value = "";
+      await fetchResumes();
+    } catch (err) {
+      console.error("Resume upload failed:", err);
+      setError("Could not upload resume. Please try again.");
+    }
   };
+
   const fetchResumes = async () => {
-    const q = query(
-      collection(db, "resumes"),
-      where("userId", "==", auth.currentUser.uid),
-    );
-
-    const snapshot = await getDocs(q);
-    setResumes(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  };
-
-  const loadAppliedJobs = async () => {
-    // Get all jobs
-    const jobsQuery = query(
-      collection(db, "jobs"),
-      where("active", "!=", false),
-    );
-    const jobsSnap = await getDocs(jobsQuery);
-    const allJobs = jobsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    setJobs(allJobs);
-
-    // Get user's applications
-    const allApps = getApplications();
-    const userApps = allApps.filter(
-      (app) => app.userId === auth.currentUser.uid,
-    );
-    setAppliedJobs(userApps);
+    if (!auth.currentUser?.uid) return;
+    const items = await getResumesByUser(auth.currentUser.uid);
+    setResumes(items);
   };
 
   const handleRemove = async (id) => {
     // remove document from Firestore then refresh list
-    await deleteDoc(doc(db, "resumes", id));
-    await fetchResumes();
-  };
-
-  const viewResume = async (resume) => {
     try {
-      if (!resume || !resume.base64Data) return;
-      // base64Data is a data URL (e.g. data:application/pdf;base64,....)
-      const resp = await fetch(resume.base64Data);
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      await removeResume(id);
+      setSuccess("Resume deleted.");
+      await fetchResumes();
     } catch (err) {
-      console.error("Failed to open resume:", err);
+      console.error("Delete resume failed:", err);
+      setError("Could not delete resume.");
     }
   };
 
+  const handleSaveName = async () => {
+    const trimmed = displayNameInput.trim();
+    if (!trimmed) {
+      setError("Name cannot be empty.");
+      return;
+    }
+
+    try {
+      setSavingName(true);
+      setError("");
+      setSuccess("");
+      await updateProfile({ name: trimmed });
+      setSuccess("Profile updated.");
+      setEditingName(false);
+    } catch (err) {
+      console.error("Update profile failed:", err);
+      setError("Could not update profile right now.");
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  const viewResumeInNewTab = async (resume) => {
+    try {
+      await openResumeInNewTab(resume);
+    } catch (err) {
+      console.error("Failed to open resume:", err);
+      setError(err.message || "Could not open resume in new tab.");
+    }
+  };
+
+  const openPreview = async (resume) => {
+    if (!resume?.base64Data) return;
+
+    setPreviewResume(resume);
+    setPreviewLoading(true);
+    setPreviewError("");
+    setPreviewBlobUrl("");
+    setPreviewDocHtml("");
+
+    try {
+      if (isPdfResume(resume)) {
+        const blob = await dataUrlToBlob(resume.base64Data);
+        const url = URL.createObjectURL(blob);
+        setPreviewBlobUrl(url);
+        return;
+      }
+
+      if (isDocResume(resume)) {
+        const html = await convertDocToHtml(resume);
+        setPreviewDocHtml(html || "<p>No readable content found.</p>");
+        return;
+      }
+
+      setPreviewError("This resume format is not previewable in-app.");
+    } catch (err) {
+      console.error("Resume preview failed:", err);
+      setPreviewError("Could not preview this resume.");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewResume(null);
+    setPreviewLoading(false);
+    setPreviewError("");
+    setPreviewDocHtml("");
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+    }
+    setPreviewBlobUrl("");
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewBlobUrl) {
+        URL.revokeObjectURL(previewBlobUrl);
+      }
+    };
+  }, [previewBlobUrl]);
+
+  const displayName = getProfileDisplayName(user);
+  const initials = getProfileInitials(user);
+
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-5xl space-y-6">
       {/* Page Header */}
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">
-            My Resumes
+            Profile
           </h1>
           <p className="text-slate-500 mt-1">
-            Manage your documents for AI-powered matching.
+            Manage your account details and resumes in one place.
           </p>
-        </div>
-        <label className="saas-btn saas-btn-primary">
-          <Upload size={16} />
-          Upload Resume
-          <input
-            type="file"
-            multiple
-            onChange={handleUpload}
-            className="hidden"
-          />
-        </label>
-      </div>
-
-      {/* Step Flow */}
-      <div className="glass-card p-5">
-        <div className="flex items-center justify-between max-w-xl mx-auto">
-          {STEPS.map((s, i) => (
-            <div key={s} className="flex items-center gap-8 last:grow-0 grow">
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2 transition-all ${
-                    i < activeStep
-                      ? "bg-emerald-500 border-emerald-500 text-white"
-                      : i === activeStep
-                        ? "border-indigo-500 text-indigo-500"
-                        : "border-slate-200 text-slate-400"
-                  }`}
-                >
-                  {i < activeStep ? <CheckCircle2 size={16} /> : i + 1}
-                </div>
-                <span
-                  className={`text-xs font-medium ${
-                    i <= activeStep ? "text-slate-900" : "text-slate-400"
-                  }`}
-                >
-                  {s}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div
-                  className={`h-[1px] grow transition-colors ${i < activeStep ? "bg-emerald-500" : "bg-slate-100"}`}
-                />
-              )}
-            </div>
-          ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upload Zone */}
-        <div className="lg:col-span-1">
-          <label className="group block h-56 cursor-pointer">
-            <div className="h-full rounded-lg border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex flex-col items-center justify-center p-6 text-center">
-              <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                <FilePlus size={24} />
+        <div className="glass-card p-5 lg:col-span-1">
+          <div className="flex items-center gap-4">
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={displayName}
+                className="w-14 h-14 rounded-full object-cover border border-slate-200"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 font-semibold">
+                {initials}
               </div>
-              <p className="mt-4 text-sm font-medium text-slate-900">
-                Drop document
+            )}
+            <div className="min-w-0">
+              {editingName ? (
+                <input
+                  type="text"
+                  value={displayNameInput}
+                  onChange={(e) => setDisplayNameInput(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-900"
+                />
+              ) : (
+                <p className="text-base font-semibold text-slate-900 truncate">{displayName}</p>
+              )}
+              <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+                <Mail size={14} /> {user?.email || "-"}
               </p>
-              <p className="mt-1 text-xs text-slate-400">PDF or DOCX allowed</p>
+              <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                <UserRound size={12} />
+                {user?.role === "company" ? "Employer" : "Job Seeker"}
+              </p>
             </div>
-            <input
-              type="file"
-              multiple
-              onChange={handleUpload}
-              className="hidden"
-            />
-          </label>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2">
+            {!editingName ? (
+              <button
+                onClick={() => setEditingName(true)}
+                className="saas-btn saas-btn-secondary py-2 px-3 text-sm"
+              >
+                <Pencil size={14} /> Edit Name
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleSaveName}
+                  disabled={savingName}
+                  className="saas-btn saas-btn-primary py-2 px-3 text-sm"
+                >
+                  <Save size={14} /> {savingName ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingName(false);
+                    setDisplayNameInput(displayName);
+                  }}
+                  className="saas-btn saas-btn-secondary py-2 px-3 text-sm"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Document List */}
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-sm font-medium text-slate-500">Your Documents</h3>
-          {resumes.length === 0 ? (
-            <div className="glass-card p-12 text-center flex flex-col items-center">
-              <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
-                <Info size={24} />
-              </div>
-              <p className="mt-4 text-sm text-slate-500">
-                No documents uploaded yet.
+        <div className="glass-card p-5 lg:col-span-2">
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Resume Management</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Upload, view, and remove resumes used for applications.
               </p>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {resumes.map((r) => (
+            <label className="saas-btn saas-btn-primary">
+              <Upload size={16} />
+              Upload Resume
+              <input
+                type="file"
+                multiple
+                onChange={handleUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          <div className="mt-3 text-xs text-slate-400">
+            Allowed: PDF, DOC, DOCX. Max size: {Math.round(MAX_RESUME_SIZE_BYTES / 1024)} KB per file.
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {resumes.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+                <div className="w-10 h-10 bg-white rounded-full border border-slate-200 flex items-center justify-center text-slate-400 mx-auto">
+                  <Info size={20} />
+                </div>
+                <p className="mt-3 text-sm text-slate-500">No resumes uploaded yet.</p>
+              </div>
+            ) : (
+              resumes.map((resume) => (
                 <div
-                  key={r.id}
-                  className="glass-card p-4 flex items-center justify-between group hover:border-slate-300 transition-colors"
+                  key={resume.id}
+                  className="rounded-xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-4"
                 >
-                  <div
-                    className="flex items-center gap-4 cursor-pointer"
-                    onClick={() => viewResume(r)}
-                  >
-                    <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center">
-                      <FileText size={20} />
+                  <div className="flex items-center gap-3 text-left min-w-0">
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center shrink-0">
+                      <FileText size={18} />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">
-                        {r.fileName || r.name}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-900 truncate">
+                        {resume.fileName || resume.name}
                       </p>
-                      <p className="text-xs text-slate-400">
-                        Uploaded on {new Date().toLocaleDateString()}
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {(resume.sizeBytes || 0) > 0
+                          ? `${Math.round(resume.sizeBytes / 1024)} KB`
+                          : "Size unavailable"}
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleRemove(r.id)}
-                    className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openPreview(resume)}
+                      className="saas-btn saas-btn-secondary py-2 px-3 text-sm"
+                    >
+                      <FileText size={14} /> Preview
+                    </button>
+                    <button
+                      onClick={() => viewResumeInNewTab(resume)}
+                      className="saas-btn saas-btn-secondary py-2 px-3 text-sm"
+                    >
+                      <ExternalLink size={14} /> New Tab
+                    </button>
+
+                    <button
+                      onClick={() => handleRemove(resume.id)}
+                      className="saas-btn saas-btn-secondary py-2 px-3 text-sm text-red-500"
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm">
+          {success}
+        </div>
+      )}
+
+      {previewResume && (
+        <div className="fixed inset-0 z-40 bg-slate-900/50 p-4 flex items-center justify-center">
+          <div className="w-full max-w-4xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Resume Preview</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  {previewResume.fileName || previewResume.name || "Resume"}
+                </p>
+              </div>
+              <button
+                onClick={closePreview}
+                className="text-slate-400 hover:text-slate-700"
+                aria-label="Close resume preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {previewLoading && (
+              <div className="glass-card p-6 text-sm text-slate-500">Preparing preview...</div>
+            )}
+
+            {!previewLoading && previewError && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+                {previewError}
+              </div>
+            )}
+
+            {!previewLoading && previewBlobUrl && (
+              <div className="border border-slate-200 rounded-xl overflow-hidden h-[70vh] bg-slate-50">
+                <iframe
+                  title="Resume Preview"
+                  src={previewBlobUrl}
+                  className="w-full h-full"
+                />
+              </div>
+            )}
+
+            {!previewLoading && previewDocHtml && (
+              <div
+                className="border border-slate-200 rounded-xl p-5 prose prose-slate max-w-none"
+                // Controlled conversion from mammoth HTML output.
+                dangerouslySetInnerHTML={{ __html: previewDocHtml }}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -51,19 +51,16 @@ export const deleteUserResume = (id) => {
 };
 
 // Mock AI Engine
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { getApplicationsByUser } from "../services/applicationService";
+import { getActivePostings } from "../services/postingService";
 
 export const getAiJobMatches = async (resumeName, userId) => {
     // fetch active jobs from Firestore
-    const q = query(collection(db, "jobs"), where("active", "!=", false));
-    const snap = await getDocs(q);
-    const allJobs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const allJobs = await getActivePostings();
     
     // Get user's applications
-    const allApps = getApplications();
-    const userAppliedJobIds = allApps
-        .filter(app => app.userId === userId)
+    const userApps = await getApplicationsByUser(userId);
+    const userAppliedJobIds = userApps
         .map(app => app.jobId);
     
     // Filter out jobs user has already applied to

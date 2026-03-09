@@ -1,9 +1,27 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, Brain, ArrowRight } from "lucide-react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
+import { getDefaultRouteByRole } from "../routes/routeUtils";
 
 function Signup() {
   const [role, setRole] = useState("user");
@@ -11,12 +29,92 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, resolveUserProfile } = useAuth();
+
+  const roleLabel = (value) => (value === "company" ? "Employer" : "Job Seeker");
+
+  const detectExistingRoleByUid = async (uid) => {
+    const companyDoc = await getDoc(doc(db, "companies", uid));
+    if (companyDoc.exists()) return "company";
+
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) return userDoc.data().role || "user";
+
+    return null;
+  };
+
+  const detectExistingRoleByEmail = async (targetEmail) => {
+    const companySnap = await getDocs(
+      query(collection(db, "companies"), where("email", "==", targetEmail)),
+    );
+    if (!companySnap.empty) return "company";
+
+    const usersSnap = await getDocs(
+      query(collection(db, "users"), where("email", "==", targetEmail)),
+    );
+    if (!usersSnap.empty) {
+      return usersSnap.docs[0].data().role || "user";
+    }
+
+    return null;
+  };
+
+  const getFriendlySignupError = async (err, fallbackEmail) => {
+    if (err.code === "auth/email-already-in-use") {
+      const existingRole = await detectExistingRoleByEmail(fallbackEmail);
+      const existingLabel = roleLabel(existingRole || "user");
+      return `This email is already registered as ${existingLabel}. Please log in instead.`;
+    }
+
+    if (err.code === "auth/account-exists-with-different-credential") {
+      const conflictedEmail = err.customData?.email || fallbackEmail;
+      const existingRole = await detectExistingRoleByEmail(conflictedEmail);
+      const existingLabel = roleLabel(existingRole || "user");
+      return `This Google account is already linked to ${conflictedEmail} as ${existingLabel}. Please sign in from the login page.`;
+    }
+
+    if (err.code === "auth/weak-password") {
+      return "Password is too weak. Use at least 8 characters with letters and numbers.";
+    }
+
+    if (err.code === "auth/popup-closed-by-user") {
+      return "Google signup was cancelled. Please try again.";
+    }
+
+    if (err.code === "auth/popup-blocked") {
+      return "Google popup was blocked by the browser. Allow popups and try again.";
+    }
+
+    if (err.code === "auth/network-request-failed") {
+      return "Network error. Check your internet connection and try again.";
+    }
+    
+    if (err.message?.includes("insufficient permissions")) {
+      return "Signup succeeded but profile save failed. Check Firestore security rules.";
+    }
+
+    return err.message || "Signup failed. Please try again.";
+  };
 
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       setError("");
+
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      if (signInMethods.length > 0) {
+        const existingRole = await detectExistingRoleByEmail(email);
+        const existingLabel = roleLabel(existingRole || "user");
+        setError(
+          `This email is already registered as ${existingLabel}. Please log in instead.`,
+        );
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -28,8 +126,11 @@ function Signup() {
           name,
           email,
           role,
+          photoURL: userCredential.user.photoURL || "",
           createdAt: serverTimestamp(),
-        });
+        }, { merge: true });
+        // Keep profile source-of-truth in one collection for each role.
+        await deleteDoc(doc(db, "companies", userCredential.user.uid));
       }
 
       if (role === "company") {
@@ -38,22 +139,95 @@ function Signup() {
           name,
           email,
           role: "company",
+          photoURL: userCredential.user.photoURL || "",
           createdAt: serverTimestamp(),
-        });
+        }, { merge: true });
+        await deleteDoc(doc(db, "users", userCredential.user.uid));
       }
 
-      navigate("/login");
+      const appUser = await resolveUserProfile(userCredential.user);
+      login(appUser);
+      navigate(getDefaultRouteByRole(appUser.role), { replace: true });
     } catch (err) {
       console.error("Signup error:", err);
-      if (err.code === "auth/email-already-in-use")
-        setError("This email is already registered. Try logging in instead.");
-      else if (err.code === "auth/weak-password")
-        setError("Password is too weak. Use a stronger password.");
-      else if (err.message?.includes("insufficient permissions"))
-        setError(
-          "Signup succeeded but saving profile failed: check Firestore rules.",
+      const message = await getFriendlySignupError(err, email);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setError("");
+    setGoogleLoading(true);
+    sessionStorage.setItem("auth_redirect_suppressed", "1");
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const userCredential = await signInWithPopup(auth, provider);
+      const finalEmail = userCredential.user.email || email;
+      const existingRoleByUid = await detectExistingRoleByUid(userCredential.user.uid);
+      const existingRoleByEmail = finalEmail
+        ? await detectExistingRoleByEmail(finalEmail)
+        : null;
+      const existingRole = existingRoleByUid || existingRoleByEmail;
+
+      if (existingRole) {
+        const message = `This Google account is already registered as ${roleLabel(existingRole)}. Please log in instead.`;
+        sessionStorage.setItem("auth_notice", message);
+        await signOut(auth);
+        navigate("/login", { replace: true, state: { authNotice: message } });
+        return;
+      }
+
+      const finalName =
+        name ||
+        userCredential.user.displayName ||
+        (role === "company" ? "Company User" : "User");
+
+      if (role === "company") {
+        await setDoc(
+          doc(db, "companies", userCredential.user.uid),
+          {
+            userId: userCredential.user.uid,
+            name: finalName,
+            email: finalEmail,
+            role: "company",
+            photoURL: userCredential.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
         );
-      else setError(err.message || "Signup failed. Please try again.");
+        await deleteDoc(doc(db, "users", userCredential.user.uid));
+      } else {
+        await setDoc(
+          doc(db, "users", userCredential.user.uid),
+          {
+            name: finalName,
+            email: finalEmail,
+            role: "user",
+            photoURL: userCredential.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+        await deleteDoc(doc(db, "companies", userCredential.user.uid));
+      }
+
+      const appUser = await resolveUserProfile(userCredential.user);
+      login(appUser);
+      sessionStorage.removeItem("auth_redirect_suppressed");
+      navigate(getDefaultRouteByRole(appUser.role), { replace: true });
+    } catch (err) {
+      console.error("Google signup error:", err);
+      const message = await getFriendlySignupError(
+        err,
+        err.customData?.email || email,
+      );
+      setError(message);
+      sessionStorage.removeItem("auth_redirect_suppressed");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -198,10 +372,37 @@ function Signup() {
             <button
               type="submit"
               className="saas-btn saas-btn-primary w-full py-3 rounded-xl text-sm"
+              disabled={loading}
             >
-              <span className="flex items-center gap-2">
-                Create account <ArrowRight size={16} />
-              </span>
+              {loading ? (
+                <span className="flex items-center gap-2">Creating account...</span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  Create account <ArrowRight size={16} />
+                </span>
+              )}
+            </button>
+
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-400">or</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              disabled={googleLoading}
+              className="saas-btn saas-btn-secondary w-full py-3 rounded-xl text-sm"
+            >
+              {googleLoading
+                ? "Connecting to Google..."
+                : role === "company"
+                  ? "Continue with Google as Employer"
+                  : "Continue with Google as Job Seeker"}
             </button>
           </form>
 
