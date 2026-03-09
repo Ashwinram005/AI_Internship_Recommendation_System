@@ -44,7 +44,7 @@ export default function CompanyLayout() {
                 className="w-9 h-9 rounded-full object-cover border border-slate-200"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-violet-50 border border-violet-200 flex items-center justify-center font-semibold text-violet-600 text-sm">
+              <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-semibold text-slate-700 text-sm">
                 {initials}
               </div>
             )}

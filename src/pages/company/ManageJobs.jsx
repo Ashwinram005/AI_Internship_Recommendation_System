@@ -734,6 +734,9 @@ export default function ManageJobs() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">Manage Jobs</h1>
+          <p className="text-slate-500 mt-1">Control and monitor your published listings.</p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="glass-card p-4">
@@ -772,9 +775,6 @@ export default function ManageJobs() {
           onChange={(e) => setJobSearch(e.target.value)}
         />
       </div>
-          <p className="text-slate-500 mt-1">Control and monitor your published listings.</p>
-        </div>
-      </div>
 
       {error && (
         <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
@@ -805,71 +805,71 @@ export default function ManageJobs() {
                 return haystack.includes(jobSearch.toLowerCase());
               })
               .map((job) => {
-              const count = appsFor(job.id).length;
-              const isActive = job.status === "active";
-              const isDisabled = job.status === "disabled";
-              return (
-                <tr key={job.id}>
-                  <td>
-                    <div>
-                      <p className="font-medium text-slate-900">{job.title}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{job.company} · Remote</p>
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      className={`saas-badge ${
-                        isActive ? "badge-success" : isDisabled ? "badge-warning" : "badge-info"
-                      }`}
-                    >
-                      {job.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${count > 0 ? "text-indigo-500" : "text-slate-400"}`}>
-                        {count}
+                const count = appsFor(job.id).length;
+                const isActive = job.status === "active";
+                const isDisabled = job.status === "disabled";
+                return (
+                  <tr key={job.id}>
+                    <td>
+                      <div>
+                        <p className="font-medium text-slate-900">{job.title}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{job.company} · Remote</p>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`saas-badge ${
+                          isActive ? "badge-success" : isDisabled ? "badge-warning" : "badge-info"
+                        }`}
+                      >
+                        {job.status}
                       </span>
-                      <Users size={12} className="text-slate-400" />
-                    </div>
-                  </td>
-                  <td className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {isActive ? (
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium ${count > 0 ? "text-indigo-500" : "text-slate-400"}`}>
+                          {count}
+                        </span>
+                        <Users size={12} className="text-slate-400" />
+                      </div>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {isActive ? (
+                          <button
+                            onClick={() => changePostingStatus(job.id, "disabled")}
+                            className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
+                          >
+                            Disable
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => changePostingStatus(job.id, "active")}
+                            className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
+                          >
+                            Enable
+                          </button>
+                        )}
+
                         <button
-                          onClick={() => changePostingStatus(job.id, "disabled")}
+                          onClick={() => deletePosting(job.id)}
                           className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
                         >
-                          Disable
+                          <Trash2 size={12} /> Delete
                         </button>
-                      ) : (
+
                         <button
-                          onClick={() => changePostingStatus(job.id, "active")}
-                          className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
+                          onClick={() => setSelected(job)}
+                          className="saas-btn saas-btn-secondary py-1.5 px-3 text-sm"
                         >
-                          Enable
+                          Candidates
+                          <ChevronRight size={14} />
                         </button>
-                      )}
-
-                      <button
-                        onClick={() => deletePosting(job.id)}
-                        className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
-                      >
-                        <Trash2 size={12} /> Delete
-                      </button>
-
-                      <button
-                        onClick={() => setSelected(job)}
-                        className="saas-btn saas-btn-secondary py-1.5 px-3 text-sm"
-                      >
-                        Candidates
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

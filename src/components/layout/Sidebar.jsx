@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LogOut, Brain } from "lucide-react";
+import { LogOut, BriefcaseBusiness } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useVoice } from "../../context/VoiceContext";
 import { startVoiceRecognition } from "../../services/voiceService";
@@ -26,14 +26,14 @@ export default function Sidebar({ links, title, roleLabel }) {
       {/* Brand */}
       <div className="px-2 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/25">
-            <Brain size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+            <BriefcaseBusiness size={18} className="text-white" />
           </div>
           <div className="min-w-0">
             <p className="text-base font-semibold text-slate-900 truncate font-[Poppins]">
-              AI Resume
+              TalentOps
             </p>
-            <p className="text-xs text-slate-400">{roleLabel}</p>
+            <p className="text-xs text-slate-500">{roleLabel}</p>
           </div>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function Sidebar({ links, title, roleLabel }) {
             className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${
               isListening
                 ? "bg-red-50 text-red-500 border border-red-200"
-                : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
+                : "bg-slate-900 text-white border border-slate-900 hover:bg-slate-800"
             }`}
           >
             <Mic size={18} />

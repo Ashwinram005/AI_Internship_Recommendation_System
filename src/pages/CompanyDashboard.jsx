@@ -1,152 +1,54 @@
-import {
-  BriefcaseBusiness,
-  Users,
-  CalendarClock,
-  Sparkles,
-  ArrowUpRight,
-} from "lucide-react";
+import { BriefcaseBusiness, CalendarClock, ClipboardCheck, UsersRound } from "lucide-react";
 
-function CompanyDashboard() {
-  const kpis = [
-    {
-      label: "Active Openings",
-      value: "12",
-      icon: BriefcaseBusiness,
-      color: "text-indigo-500",
-      bg: "bg-indigo-50",
-    },
-    {
-      label: "Applicants",
-      value: "148",
-      icon: Users,
-      color: "text-emerald-500",
-      bg: "bg-emerald-50",
-    },
-    {
-      label: "Avg. Review Time",
-      value: "18h",
-      icon: CalendarClock,
-      color: "text-amber-500",
-      bg: "bg-amber-50",
-    },
+export default function CompanyDashboard() {
+  const metrics = [
+    { label: "Open Roles", value: "12", icon: BriefcaseBusiness },
+    { label: "Total Applicants", value: "148", icon: UsersRound },
+    { label: "Interview Queue", value: "23", icon: CalendarClock },
+    { label: "Hires This Month", value: "06", icon: ClipboardCheck },
   ];
 
   return (
-    <div className="max-w-5xl space-y-8">
-      {/* Page Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">
-            Company Dashboard
-          </h1>
-          <p className="text-slate-500 mt-1">
-            AI-assisted screening and fast publishing.
-          </p>
-        </div>
-        <button className="saas-btn saas-btn-secondary">
-          Export Report <ArrowUpRight size={15} />
-        </button>
+    <div className="max-w-6xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Hiring Operations</h1>
+        <p className="text-slate-500 mt-1">A focused overview of role performance and applicant throughput.</p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {kpis.map((item) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {metrics.map((item) => {
           const Icon = item.icon;
           return (
             <div key={item.label} className="glass-card p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">{item.label}</p>
-                  <p className="text-2xl font-semibold text-slate-900 mt-1">
-                    {item.value}
-                  </p>
-                </div>
-                <div className={`p-2.5 rounded-lg ${item.bg}`}>
-                  <Icon size={20} className={item.color} />
-                </div>
+              <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                <Icon size={16} />
               </div>
+              <p className="text-2xl font-extrabold text-slate-900 mt-3">{item.value}</p>
+              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">{item.label}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Post Job & Applicants */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="glass-card p-6 xl:col-span-2">
-          <div className="mb-6">
-            <h3 className="font-medium text-slate-900">Post New Job</h3>
-            <p className="text-sm text-slate-500 mt-1">
-              Create a listing and let AI rank candidates automatically.
-            </p>
-          </div>
-
-          <div className="grid gap-5">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600">
-                Job Title
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Senior Data Analyst"
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600">
-                Skills Required
-              </label>
-              <input
-                type="text"
-                placeholder="React, SQL, Communication"
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600">
-                Application Deadline
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm"
-              />
-            </div>
-
-            <button className="saas-btn saas-btn-primary w-full py-2.5 justify-center">
-              Publish Listing
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="glass-card p-5">
+          <h2 className="text-lg font-bold text-slate-900">Recruiting Pipeline Health</h2>
+          <div className="mt-4 space-y-3 text-sm text-slate-700">
+            <div className="p-3 border border-slate-200 rounded-lg bg-slate-50">Roles with low applicant quality: 2</div>
+            <div className="p-3 border border-slate-200 rounded-lg bg-slate-50">Roles nearing closure this week: 5</div>
+            <div className="p-3 border border-slate-200 rounded-lg bg-slate-50">Avg candidate response time: 19h</div>
           </div>
         </div>
 
-        <div className="glass-card p-6">
-          <h3 className="font-medium text-slate-900 mb-4">AI Assistant</h3>
-
-          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                <Sparkles size={16} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  AI Ranking Pipeline
-                </p>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  After deadline, top candidates are ranked by skills and match
-                  score.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 p-4 rounded-lg bg-slate-50 text-sm text-slate-500">
-            Tip: Include specific skills in the job description to improve
-            candidate quality.
+        <div className="glass-card p-5">
+          <h2 className="text-lg font-bold text-slate-900">Actions</h2>
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            <button className="saas-btn saas-btn-primary justify-start">Post New Role</button>
+            <button className="saas-btn saas-btn-secondary justify-start">Review Rejected Data</button>
+            <button className="saas-btn saas-btn-secondary justify-start">Export Hiring Snapshot</button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default CompanyDashboard;

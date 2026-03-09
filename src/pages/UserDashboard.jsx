@@ -1,79 +1,59 @@
-import { useState } from "react";
-import { FileText, UploadCloud, Briefcase, ArrowRight } from "lucide-react";
+import { Briefcase, FileText, ClipboardList, Clock3 } from "lucide-react";
 
-function UserDashboard() {
-  const [resumes, setResumes] = useState([]);
-
-  const uploadResume = (e) => {
-    const files = Array.from(e.target.files);
-    setResumes([...resumes, ...files]);
-  };
+export default function UserDashboard() {
+  const cards = [
+    { label: "Active Applications", value: "07", icon: ClipboardList },
+    { label: "Saved Resumes", value: "03", icon: FileText },
+    { label: "Pending Reviews", value: "04", icon: Clock3 },
+    { label: "Open Matches", value: "16", icon: Briefcase },
+  ];
 
   return (
-    <div className="max-w-4xl space-y-8">
-      {/* Page Header */}
+    <div className="max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">
-          Dashboard
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Welcome back! Manage your job search.
-        </p>
+        <h1 className="text-2xl font-bold text-slate-900">Candidate Workbench</h1>
+        <p className="text-slate-500 mt-1">Track opportunities, applications, and progress in one place.</p>
       </div>
 
-      {/* Upload Section */}
-      <div className="glass-card p-6">
-        <h3 className="font-medium text-slate-900 mb-4">Upload Resumes</h3>
-
-        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
-          <UploadCloud size={20} className="text-indigo-500 mb-2" />
-          <span className="text-slate-500 text-sm">
-            Click to upload or drag & drop resumes
-          </span>
-          <input
-            type="file"
-            multiple
-            onChange={uploadResume}
-            className="hidden"
-          />
-        </label>
-      </div>
-
-      {/* Uploaded Resumes Section */}
-      <div className="glass-card p-6">
-        <h3 className="font-medium text-slate-900 mb-4">Uploaded Resumes</h3>
-
-        {resumes.length === 0 ? (
-          <p className="text-slate-500 text-sm">No resumes uploaded yet.</p>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {resumes.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200"
-              >
-                <span className="text-slate-600 flex items-center gap-2 text-sm">
-                  <FileText size={16} className="text-indigo-500" />
-                  {file.name}
-                </span>
-                <button className="text-red-500 hover:text-red-400 text-sm">
-                  Remove
-                </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {cards.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="glass-card p-5">
+              <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                <Icon size={16} />
               </div>
-            ))}
-          </div>
-        )}
+              <p className="text-2xl font-extrabold text-slate-900 mt-3">{item.value}</p>
+              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">{item.label}</p>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Job Section */}
-      <div className="glass-card p-6">
-        <h3 className="font-medium text-slate-900 mb-4">Available Jobs</h3>
-        <button className="saas-btn saas-btn-primary">
-          <Briefcase size={16} /> Search Jobs <ArrowRight size={14} />
-        </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="glass-card p-5 lg:col-span-2">
+          <h2 className="text-lg font-bold text-slate-900">Today</h2>
+          <div className="mt-4 space-y-3 text-sm">
+            <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+              2 applications moved to <span className="font-semibold">In Review</span>.
+            </div>
+            <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+              1 application deadline approaching in the next 24 hours.
+            </div>
+            <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+              Resume profile was used in 3 recent submissions.
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card p-5">
+          <h2 className="text-lg font-bold text-slate-900">Next Best Action</h2>
+          <p className="text-sm text-slate-600 mt-3">
+            Review your pending applications and withdraw outdated submissions to keep your pipeline clean.
+          </p>
+          <button className="saas-btn saas-btn-primary w-full mt-4">Go to Applications</button>
+        </div>
       </div>
     </div>
   );
 }
-
-export default UserDashboard;
