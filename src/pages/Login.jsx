@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Lock, Mail, BriefcaseBusiness } from "lucide-react";
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { getDefaultRouteByRole } from "../routes/routeUtils";
@@ -19,7 +23,8 @@ export default function Login() {
 
   useEffect(() => {
     sessionStorage.removeItem("auth_redirect_suppressed");
-    const notice = location.state?.authNotice || sessionStorage.getItem("auth_notice");
+    const notice =
+      location.state?.authNotice || sessionStorage.getItem("auth_notice");
     if (notice) {
       setError(notice);
       sessionStorage.removeItem("auth_notice");
@@ -68,30 +73,44 @@ export default function Login() {
           </div>
           <div>
             <p className="font-bold">TalentOps</p>
-            <p className="text-xs text-slate-300">Hiring & Candidate Platform</p>
+            <p className="text-xs text-slate-300">
+              Hiring & Candidate Platform
+            </p>
           </div>
         </div>
 
         <div className="max-w-md">
-          <h1 className="text-4xl font-bold leading-tight">Access your recruitment workspace.</h1>
+          <h1 className="text-4xl font-bold leading-tight">
+            Access your recruitment workspace.
+          </h1>
           <p className="text-slate-300 mt-4">
-            Manage roles, applications, and hiring operations from one secure console.
+            Manage roles, applications, and hiring operations from one secure
+            console.
           </p>
         </div>
 
-        <p className="text-xs text-slate-400">Secure login. Role-aware access. Production workflow.</p>
+        <p className="text-xs text-slate-400">
+          Secure login. Role-aware access. Production workflow.
+        </p>
       </section>
 
       <section className="flex items-center justify-center p-6 lg:p-10">
         <div className="w-full max-w-md glass-card p-7 sm:p-8 bg-white">
           <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
-          <p className="text-sm text-slate-500 mt-1">Continue to your dashboard</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Continue to your dashboard
+          </p>
 
           <form onSubmit={onEmailLogin} className="mt-6 space-y-4">
             <div>
-              <label className="text-sm font-semibold text-slate-600">Email</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Email
+              </label>
               <div className="relative mt-1.5">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="email"
                   value={email}
@@ -104,9 +123,14 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-600">Password</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Password
+              </label>
               <div className="relative mt-1.5">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="password"
                   value={password}
@@ -118,7 +142,10 @@ export default function Login() {
               </div>
             </div>
 
-            <button className="saas-btn saas-btn-primary w-full" disabled={loading}>
+            <button
+              className="saas-btn saas-btn-primary w-full"
+              disabled={loading}
+            >
               {loading ? "Signing in..." : "Sign In"}
             </button>
 
@@ -140,7 +167,10 @@ export default function Login() {
 
           <p className="mt-6 text-sm text-slate-500 text-center">
             No account?{" "}
-            <Link to="/signup" className="font-semibold text-slate-900 hover:underline">
+            <Link
+              to="/signup"
+              className="font-semibold text-slate-900 hover:underline"
+            >
               Create one
             </Link>
           </p>

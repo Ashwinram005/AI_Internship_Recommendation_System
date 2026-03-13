@@ -38,6 +38,10 @@ import {
   isPdfResume,
   openResumeInNewTab,
 } from "../../utils/resumePreview";
+import {
+  getGeminiKeyAvailable,
+  rankCandidatesForJob,
+} from "../../services/aiMatchingService";
 
 export default function ManageJobs() {
   const { user } = useAuth();
@@ -49,7 +53,9 @@ export default function ManageJobs() {
   const [jobSearch, setJobSearch] = useState("");
   const [applicantSearch, setApplicantSearch] = useState("");
   const [rejectDialogApp, setRejectDialogApp] = useState(null);
-  const [rejectReason, setRejectReason] = useState("Not a fit for role requirements");
+  const [rejectReason, setRejectReason] = useState(
+    "Not a fit for role requirements",
+  );
   const [rejectNote, setRejectNote] = useState("");
   const [updatingApplicationId, setUpdatingApplicationId] = useState("");
   const [candidateProfilesById, setCandidateProfilesById] = useState({});
@@ -58,6 +64,10 @@ export default function ManageJobs() {
   const [previewBlobUrl, setPreviewBlobUrl] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
+  const [candidateScoreByApplicationId, setCandidateScoreByApplicationId] =
+    useState({});
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [rankingNotice, setRankingNotice] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -105,9 +115,63 @@ export default function ManageJobs() {
     applications
       .filter((a) => a.jobId === id)
       .sort(
-        (a, b) =>
-          (b.dateApplied?.seconds || 0) - (a.dateApplied?.seconds || 0),
+        (a, b) => (b.dateApplied?.seconds || 0) - (a.dateApplied?.seconds || 0),
       );
+
+  useEffect(() => {
+    const runCandidateRanking = async () => {
+      if (!selected?.id) {
+        setCandidateScoreByApplicationId({});
+        setRankingNotice("");
+        return;
+      }
+
+      const selectedApps = applications.filter(
+        (item) => item.jobId === selected.id,
+      );
+      if (!selectedApps.length) {
+        setCandidateScoreByApplicationId({});
+        return;
+      }
+
+      try {
+        setRankingLoading(true);
+        const candidates = selectedApps.map((app) => {
+          const candidate = candidateProfilesById[app.userId] || {};
+          const resumeDoc = candidateResumesById[app.resumeId] || null;
+          return {
+            applicationId: app.id,
+            candidateName: candidate.name || "Candidate",
+            resume: buildResumeView(app, resumeDoc),
+          };
+        });
+
+        const ranked = await rankCandidatesForJob({
+          job: selected,
+          candidates,
+        });
+
+        const mapped = ranked.reduce((acc, item) => {
+          acc[item.applicationId] = item;
+          return acc;
+        }, {});
+
+        setCandidateScoreByApplicationId(mapped);
+        setRankingNotice(
+          getGeminiKeyAvailable()
+            ? ""
+            : "Gemini API key missing. Showing fallback keyword-based ranking.",
+        );
+      } catch (err) {
+        console.error("Candidate ranking failed:", err);
+        setRankingNotice("AI ranking temporarily unavailable.");
+      } finally {
+        setRankingLoading(false);
+      }
+    };
+
+    runCandidateRanking();
+  }, [selected?.id, applications, candidateProfilesById, candidateResumesById]);
 
   const changePostingStatus = async (id, status) => {
     try {
@@ -192,7 +256,9 @@ export default function ManageJobs() {
       setUpdatingApplicationId(applicationId);
       setError("");
       setSuccess("");
-      await deleteApplicationRecord(applicationId, { actorCompanyId: user?.uid || null });
+      await deleteApplicationRecord(applicationId, {
+        actorCompanyId: user?.uid || null,
+      });
 
       if (selectedApplication?.id === applicationId) {
         setSelectedApplication(null);
@@ -292,9 +358,15 @@ export default function ManageJobs() {
       .filter((app) => statusFilter === "all" || app.status === statusFilter)
       .filter((app) => {
         const candidate = candidateProfilesById[app.userId] || {};
-        const haystack = `${candidate.name || ""} ${candidate.email || ""} ${app.resumeName || ""}`.toLowerCase();
+        const haystack =
+          `${candidate.name || ""} ${candidate.email || ""} ${app.resumeName || ""}`.toLowerCase();
         return haystack.includes(applicantSearch.toLowerCase());
-      });
+      })
+      .sort(
+        (a, b) =>
+          (candidateScoreByApplicationId[b.id]?.score || 0) -
+          (candidateScoreByApplicationId[a.id]?.score || 0),
+      );
     return (
       <div className="max-w-5xl space-y-6">
         <div className="flex items-center gap-4">
@@ -331,15 +403,36 @@ export default function ManageJobs() {
             <Sparkles size={18} />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-900">AI Ranking Activated</p>
-            <p className="text-xs text-slate-500">
-              Candidate prioritization shown with workflow status controls.
+            <p className="text-sm font-medium text-slate-900">
+              AI Ranking Activated
             </p>
+            {rankingLoading ? (
+              <p className="text-xs text-indigo-600">
+                Scoring candidates against job description and resumes...
+              </p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Candidate prioritization shown with workflow status controls.
+              </p>
+            )}
+            {rankingNotice ? (
+              <p className="text-xs text-amber-700 mt-1">{rankingNotice}</p>
+            ) : null}
           </div>
         </div>
 
         <div className="glass-card p-3 flex flex-wrap gap-2">
-          {["all", "submitted", "reviewing", "shortlisted", "interview", "offered", "hired", "rejected", "withdrawn"].map((key) => (
+          {[
+            "all",
+            "submitted",
+            "reviewing",
+            "shortlisted",
+            "interview",
+            "offered",
+            "hired",
+            "rejected",
+            "withdrawn",
+          ].map((key) => (
             <button
               key={key}
               onClick={() => setStatusFilter(key)}
@@ -375,6 +468,7 @@ export default function ManageJobs() {
             <table className="saas-table">
               <thead>
                 <tr>
+                  <th>Rank</th>
                   <th>Candidate</th>
                   <th>Application Date</th>
                   <th>Current Stage</th>
@@ -386,15 +480,26 @@ export default function ManageJobs() {
                 {apps.map((app, idx) => {
                   const candidate = candidateProfilesById[app.userId] || null;
                   const resume = candidateResumesById[app.resumeId] || null;
-                  const score = Math.max(50, 95 - idx * 5);
-                  const scoreType = score >= 80 ? "high" : score >= 65 ? "mid" : "low";
-                  const canDelete = canDeleteApplicationRecordStatus(app.status);
+                  const aiScore = candidateScoreByApplicationId[app.id];
+                  const score = aiScore?.score ?? Math.max(50, 95 - idx * 5);
+                  const scoreType =
+                    score >= 80 ? "high" : score >= 65 ? "mid" : "low";
+                  const canDelete = canDeleteApplicationRecordStatus(
+                    app.status,
+                  );
                   return (
                     <tr key={app.id}>
                       <td>
+                        <span className="saas-badge badge-info">
+                          #{idx + 1}
+                        </span>
+                      </td>
+                      <td>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center font-medium text-slate-500 text-sm">
-                            {(candidate?.name || app.resumeName || "C").charAt(0).toUpperCase()}
+                            {(candidate?.name || app.resumeName || "C")
+                              .charAt(0)
+                              .toUpperCase()}
                           </div>
                           <div>
                             <span className="font-medium text-slate-900 block">
@@ -404,26 +509,42 @@ export default function ManageJobs() {
                               {candidate?.email || "Email unavailable"}
                             </span>
                             <span className="text-xs text-slate-400 block mt-0.5">
-                              Resume: {app.resumeName || resume?.fileName || "Not attached"}
+                              Resume:{" "}
+                              {app.resumeName ||
+                                resume?.fileName ||
+                                "Not attached"}
                             </span>
-                            <span className={`score-badge score-${scoreType}`}>{score}% fit</span>
+                            <span className={`score-badge score-${scoreType}`}>
+                              {score}% fit
+                            </span>
+                            {aiScore?.summary ? (
+                              <span className="text-xs text-slate-500 block mt-0.5">
+                                {aiScore.summary}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </td>
                       <td className="text-slate-500">
                         {app.dateApplied?.seconds
-                          ? new Date(app.dateApplied.seconds * 1000).toLocaleString()
+                          ? new Date(
+                              app.dateApplied.seconds * 1000,
+                            ).toLocaleString()
                           : "-"}
                       </td>
                       <td>
-                        <span className={`saas-badge ${getStatusBadgeClass(app.status)}`}>
+                        <span
+                          className={`saas-badge ${getStatusBadgeClass(app.status)}`}
+                        >
                           {getApplicationStatusLabel(app.status)}
                         </span>
                       </td>
                       <td>
                         <select
                           defaultValue=""
-                          disabled={getNextCompanyStatuses(app.status).length === 0}
+                          disabled={
+                            getNextCompanyStatuses(app.status).length === 0
+                          }
                           onChange={(e) => {
                             if (!e.target.value) return;
                             setApplicantStatus(app.id, e.target.value);
@@ -432,11 +553,13 @@ export default function ManageJobs() {
                           className="px-2.5 py-1.5 rounded-md border border-slate-200 bg-white text-xs text-slate-700 disabled:bg-slate-100"
                         >
                           <option value="">Select next stage...</option>
-                          {getNextCompanyStatuses(app.status).map((nextStatus) => (
-                            <option key={nextStatus} value={nextStatus}>
-                              {getApplicationStatusLabel(nextStatus)}
-                            </option>
-                          ))}
+                          {getNextCompanyStatuses(app.status).map(
+                            (nextStatus) => (
+                              <option key={nextStatus} value={nextStatus}>
+                                {getApplicationStatusLabel(nextStatus)}
+                              </option>
+                            ),
+                          )}
                         </select>
                       </td>
                       <td className="text-right">
@@ -444,8 +567,9 @@ export default function ManageJobs() {
                           <button
                             onClick={() => openRejectDialog(app)}
                             disabled={
-                              !getNextCompanyStatuses(app.status).includes("rejected") ||
-                              updatingApplicationId === app.id
+                              !getNextCompanyStatuses(app.status).includes(
+                                "rejected",
+                              ) || updatingApplicationId === app.id
                             }
                             className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs disabled:opacity-50"
                           >
@@ -453,10 +577,12 @@ export default function ManageJobs() {
                           </button>
                           {app.status === "rejected" && (
                             <button
-                              onClick={() => setApplicantStatus(app.id, "reviewing", {
-                                reason: "Reconsidered by hiring team",
-                                note: "Moved back to review stage.",
-                              })}
+                              onClick={() =>
+                                setApplicantStatus(app.id, "reviewing", {
+                                  reason: "Reconsidered by hiring team",
+                                  note: "Moved back to review stage.",
+                                })
+                              }
                               disabled={updatingApplicationId === app.id}
                               className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs disabled:opacity-50"
                             >
@@ -466,8 +592,9 @@ export default function ManageJobs() {
                           <button
                             onClick={() => setApplicantStatus(app.id, "hired")}
                             disabled={
-                              !getNextCompanyStatuses(app.status).includes("hired") ||
-                              updatingApplicationId === app.id
+                              !getNextCompanyStatuses(app.status).includes(
+                                "hired",
+                              ) || updatingApplicationId === app.id
                             }
                             className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs disabled:opacity-50"
                           >
@@ -481,7 +608,9 @@ export default function ManageJobs() {
                           </button>
                           <button
                             onClick={() => deleteApplication(app.id)}
-                            disabled={updatingApplicationId === app.id || !canDelete}
+                            disabled={
+                              updatingApplicationId === app.id || !canDelete
+                            }
                             className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs text-red-500 disabled:opacity-50"
                           >
                             <Trash2 size={12} /> Delete
@@ -501,7 +630,9 @@ export default function ManageJobs() {
             <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-6 space-y-5 max-h-[92vh] overflow-y-auto">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">Applicant Profile</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Applicant Profile
+                  </h3>
                   <p className="text-sm text-slate-500 mt-1">
                     Review candidate details and the attached resume.
                   </p>
@@ -516,8 +647,10 @@ export default function ManageJobs() {
               </div>
 
               {(() => {
-                const candidate = candidateProfilesById[selectedApplication.userId] || {};
-                const resumeDoc = candidateResumesById[selectedApplication.resumeId] || null;
+                const candidate =
+                  candidateProfilesById[selectedApplication.userId] || {};
+                const resumeDoc =
+                  candidateResumesById[selectedApplication.resumeId] || null;
                 const resume = buildResumeView(selectedApplication, resumeDoc);
                 const candidateName = candidate.name || "Candidate";
                 const candidateInitial = candidateName.charAt(0).toUpperCase();
@@ -530,36 +663,48 @@ export default function ManageJobs() {
                         {candidateInitial || <UserRound size={18} />}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-base font-semibold text-slate-900">{candidateName}</p>
+                        <p className="text-base font-semibold text-slate-900">
+                          {candidateName}
+                        </p>
                         <div className="mt-1 space-y-1 text-sm text-slate-600">
                           <p className="inline-flex items-center gap-1.5">
-                            <Mail size={13} /> {candidate.email || "Email unavailable"}
+                            <Mail size={13} />{" "}
+                            {candidate.email || "Email unavailable"}
                           </p>
                         </div>
                       </div>
                     </div>
 
                     <div className="glass-card p-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-slate-900">Application Decision Data</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">
+                        Application Decision Data
+                      </h4>
                       <p className="text-sm text-slate-600">
-                        Current status: {getApplicationStatusLabel(selectedApplication.status)}
+                        Current status:{" "}
+                        {getApplicationStatusLabel(selectedApplication.status)}
                       </p>
                       {selectedApplication.statusReason && (
                         <p className="text-sm text-slate-600">
-                          <span className="text-slate-400">Reason:</span> {selectedApplication.statusReason}
+                          <span className="text-slate-400">Reason:</span>{" "}
+                          {selectedApplication.statusReason}
                         </p>
                       )}
                       {selectedApplication.statusNote && (
                         <p className="text-sm text-slate-600">
-                          <span className="text-slate-400">Note:</span> {selectedApplication.statusNote}
+                          <span className="text-slate-400">Note:</span>{" "}
+                          {selectedApplication.statusNote}
                         </p>
                       )}
                       <div className="pt-1">
                         <button
-                          onClick={() => deleteApplication(selectedApplication.id)}
+                          onClick={() =>
+                            deleteApplication(selectedApplication.id)
+                          }
                           disabled={
                             updatingApplicationId === selectedApplication.id ||
-                            !canDeleteApplicationRecordStatus(selectedApplication.status)
+                            !canDeleteApplicationRecordStatus(
+                              selectedApplication.status,
+                            )
                           }
                           className="saas-btn saas-btn-secondary text-red-500 disabled:opacity-50"
                         >
@@ -568,21 +713,29 @@ export default function ManageJobs() {
                             ? "Deleting..."
                             : "Delete This Application"}
                         </button>
-                        {!canDeleteApplicationRecordStatus(selectedApplication.status) && (
+                        {!canDeleteApplicationRecordStatus(
+                          selectedApplication.status,
+                        ) && (
                           <p className="text-xs text-slate-500 mt-2">
-                            Permanent delete is available only for final applications.
+                            Permanent delete is available only for final
+                            applications.
                           </p>
                         )}
                       </div>
                     </div>
 
                     <div className="glass-card p-4 space-y-3">
-                      <h4 className="text-sm font-semibold text-slate-900">Attached Resume</h4>
+                      <h4 className="text-sm font-semibold text-slate-900">
+                        Attached Resume
+                      </h4>
                       <p className="text-sm text-slate-600">
                         {resume.fileName || "Resume"}
                       </p>
                       <p className="text-xs text-slate-500">
-                        Source: {resumeDoc?.base64Data ? "Current profile resume" : "Snapshot at application time"}
+                        Source:{" "}
+                        {resumeDoc?.base64Data
+                          ? "Current profile resume"
+                          : "Snapshot at application time"}
                         {Number.isFinite(resume.sizeBytes)
                           ? ` · ${Math.round(resume.sizeBytes / 1024)} KB`
                           : ""}
@@ -607,7 +760,9 @@ export default function ManageJobs() {
                           </div>
 
                           {previewLoading && (
-                            <div className="glass-card p-4 text-sm text-slate-500">Preparing preview...</div>
+                            <div className="glass-card p-4 text-sm text-slate-500">
+                              Preparing preview...
+                            </div>
                           )}
 
                           {!previewLoading && (
@@ -643,9 +798,14 @@ export default function ManageJobs() {
                             />
                           )}
 
-                          {!previewLoading && !previewBlobUrl && !previewHtml && isPdf && (
-                            <div className="text-xs text-slate-500">Click "Preview In Website" to load PDF.</div>
-                          )}
+                          {!previewLoading &&
+                            !previewBlobUrl &&
+                            !previewHtml &&
+                            isPdf && (
+                              <div className="text-xs text-slate-500">
+                                Click "Preview In Website" to load PDF.
+                              </div>
+                            )}
                         </div>
                       ) : (
                         <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -665,7 +825,9 @@ export default function ManageJobs() {
             <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-200 shadow-xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">Reject Application</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Reject Application
+                  </h3>
                   <p className="text-sm text-slate-500 mt-1">
                     Add a reason so rejected data stays useful and auditable.
                   </p>
@@ -680,7 +842,9 @@ export default function ManageJobs() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-600">Rejection Reason</label>
+                <label className="text-sm font-medium text-slate-600">
+                  Rejection Reason
+                </label>
                 <select
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
@@ -696,7 +860,9 @@ export default function ManageJobs() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-600">Internal Note (optional)</label>
+                <label className="text-sm font-medium text-slate-600">
+                  Internal Note (optional)
+                </label>
                 <textarea
                   rows={3}
                   value={rejectNote}
@@ -717,9 +883,14 @@ export default function ManageJobs() {
                 <button
                   onClick={confirmReject}
                   className="saas-btn saas-btn-primary"
-                  disabled={!rejectReason.trim() || updatingApplicationId === rejectDialogApp.id}
+                  disabled={
+                    !rejectReason.trim() ||
+                    updatingApplicationId === rejectDialogApp.id
+                  }
                 >
-                  {updatingApplicationId === rejectDialogApp.id ? "Saving..." : "Confirm Reject"}
+                  {updatingApplicationId === rejectDialogApp.id
+                    ? "Saving..."
+                    : "Confirm Reject"}
                 </button>
               </div>
             </div>
@@ -733,29 +904,45 @@ export default function ManageJobs() {
     <div className="max-w-5xl space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">Manage Jobs</h1>
-          <p className="text-slate-500 mt-1">Control and monitor your published listings.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins]">
+            Manage Jobs
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Control and monitor your published listings.
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="glass-card p-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wide">Total Postings</p>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">
+            Total Postings
+          </p>
           <p className="text-xl font-semibold text-slate-900 mt-1 inline-flex items-center gap-2">
             <Briefcase size={16} className="text-indigo-500" />
             {jobMetrics.total}
           </p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wide">Active</p>
-          <p className="text-xl font-semibold text-emerald-600 mt-1">{jobMetrics.active}</p>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">
+            Active
+          </p>
+          <p className="text-xl font-semibold text-emerald-600 mt-1">
+            {jobMetrics.active}
+          </p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wide">Paused</p>
-          <p className="text-xl font-semibold text-amber-600 mt-1">{jobMetrics.disabled}</p>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">
+            Paused
+          </p>
+          <p className="text-xl font-semibold text-amber-600 mt-1">
+            {jobMetrics.disabled}
+          </p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wide">Applications</p>
+          <p className="text-xs text-slate-400 uppercase tracking-wide">
+            Applications
+          </p>
           <p className="text-xl font-semibold text-slate-900 mt-1 inline-flex items-center gap-2">
             <Clock3 size={16} className="text-indigo-500" />
             {jobMetrics.applications}
@@ -801,7 +988,8 @@ export default function ManageJobs() {
           <tbody>
             {jobs
               .filter((job) => {
-                const haystack = `${job.title || ""} ${job.company || ""}`.toLowerCase();
+                const haystack =
+                  `${job.title || ""} ${job.company || ""}`.toLowerCase();
                 return haystack.includes(jobSearch.toLowerCase());
               })
               .map((job) => {
@@ -812,14 +1000,22 @@ export default function ManageJobs() {
                   <tr key={job.id}>
                     <td>
                       <div>
-                        <p className="font-medium text-slate-900">{job.title}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{job.company} · Remote</p>
+                        <p className="font-medium text-slate-900">
+                          {job.title}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {job.company} · Remote
+                        </p>
                       </div>
                     </td>
                     <td>
                       <span
                         className={`saas-badge ${
-                          isActive ? "badge-success" : isDisabled ? "badge-warning" : "badge-info"
+                          isActive
+                            ? "badge-success"
+                            : isDisabled
+                              ? "badge-warning"
+                              : "badge-info"
                         }`}
                       >
                         {job.status}
@@ -827,7 +1023,9 @@ export default function ManageJobs() {
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <span className={`font-medium ${count > 0 ? "text-indigo-500" : "text-slate-400"}`}>
+                        <span
+                          className={`font-medium ${count > 0 ? "text-indigo-500" : "text-slate-400"}`}
+                        >
                           {count}
                         </span>
                         <Users size={12} className="text-slate-400" />
@@ -837,14 +1035,18 @@ export default function ManageJobs() {
                       <div className="flex items-center justify-end gap-2">
                         {isActive ? (
                           <button
-                            onClick={() => changePostingStatus(job.id, "disabled")}
+                            onClick={() =>
+                              changePostingStatus(job.id, "disabled")
+                            }
                             className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
                           >
                             Disable
                           </button>
                         ) : (
                           <button
-                            onClick={() => changePostingStatus(job.id, "active")}
+                            onClick={() =>
+                              changePostingStatus(job.id, "active")
+                            }
                             className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
                           >
                             Enable

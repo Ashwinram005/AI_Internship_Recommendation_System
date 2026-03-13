@@ -332,11 +332,15 @@ export default function JobMatcher() {
                   <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                     <button
                       onClick={() =>
-                        setExpandedMatchId((prev) => (prev === job.id ? "" : job.id))
+                        setExpandedMatchId((prev) =>
+                          prev === job.id ? "" : job.id,
+                        )
                       }
                       className="text-xs text-slate-600 hover:text-slate-900 font-medium inline-flex items-center gap-1"
                     >
-                      {expandedMatchId === job.id ? "Hide details" : "View details"}
+                      {expandedMatchId === job.id
+                        ? "Hide details"
+                        : "View details"}
                       {expandedMatchId === job.id ? (
                         <ChevronUp size={13} />
                       ) : (
@@ -352,7 +356,9 @@ export default function JobMatcher() {
                   {expandedMatchId === job.id && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                       <div className="md:col-span-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
-                        <p className="text-slate-400 uppercase tracking-wide">Description</p>
+                        <p className="text-slate-400 uppercase tracking-wide">
+                          Description
+                        </p>
                         <p className="text-slate-700 text-sm mt-1 whitespace-pre-line leading-relaxed">
                           {job.description || "No description provided."}
                         </p>

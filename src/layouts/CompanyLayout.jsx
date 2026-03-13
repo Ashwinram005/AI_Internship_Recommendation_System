@@ -1,8 +1,13 @@
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { BarChart2, PlusCircle, Layers, Home, UserRound } from "lucide-react";
+import { BarChart2, PlusCircle, Layers, UserRound, Menu } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../context/AuthContext";
-import { getProfileDisplayName, getProfileInitials } from "../routes/routeUtils";
+import { auth } from "../firebase";
+import {
+  getProfileDisplayName,
+  getProfileInitials,
+} from "../routes/routeUtils";
 
 const breadcrumbMap = {
   "/company": "Overview",
@@ -14,9 +19,15 @@ const breadcrumbMap = {
 export default function CompanyLayout() {
   const location = useLocation();
   const { user } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const crumb = breadcrumbMap[location.pathname] ?? "Company";
   const displayName = getProfileDisplayName(user);
   const initials = getProfileInitials(user);
+  const profilePhoto = user?.photoURL || auth.currentUser?.photoURL || "";
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const links = [
     { to: "/company", label: "Overview", icon: BarChart2, exact: true },
@@ -27,19 +38,37 @@ export default function CompanyLayout() {
 
   return (
     <div className="app-layout">
-      <Sidebar title="Employment" roleLabel="Employer" links={links} />
+      {mobileOpen ? (
+        <button
+          className="mobile-sidebar-overlay lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close sidebar overlay"
+        />
+      ) : null}
+
+      <Sidebar
+        title="Employment"
+        roleLabel="Employer"
+        links={links}
+        mobileOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+      />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="app-header">
-          <div className="flex items-center gap-2 text-sm">
-            <Home size={16} className="text-slate-400" />
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-700 font-medium">{crumb}</span>
+          <div className="flex items-center gap-3 text-sm">
+            <button
+              className="saas-btn saas-btn-secondary p-2 lg:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={16} />
+            </button>
+            <span className="text-slate-700 font-semibold">{crumb}</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-500 hidden sm:block">{displayName}</span>
-            {user?.photoURL ? (
+            {profilePhoto ? (
               <img
-                src={user.photoURL}
+                src={profilePhoto}
                 alt={displayName}
                 className="w-9 h-9 rounded-full object-cover border border-slate-200"
               />

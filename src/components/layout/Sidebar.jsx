@@ -1,12 +1,20 @@
 import { NavLink } from "react-router-dom";
-import { LogOut, BriefcaseBusiness } from "lucide-react";
+import { LogOut, BriefcaseBusiness, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useVoice } from "../../context/VoiceContext";
 import { startVoiceRecognition } from "../../services/voiceService";
 import { Mic } from "lucide-react";
-import { getProfileDisplayName, getProfileInitials } from "../../routes/routeUtils";
-
-export default function Sidebar({ links, title, roleLabel }) {
+import {
+  getProfileDisplayName,
+  getProfileInitials,
+} from "../../routes/routeUtils";
+export default function Sidebar({
+  links,
+  title,
+  roleLabel,
+  mobileOpen = false,
+  onClose,
+}) {
   const { logout, user } = useAuth();
   const { handleVoiceCommand, isListening, setIsListening, lastCommand } =
     useVoice();
@@ -21,16 +29,32 @@ export default function Sidebar({ links, title, roleLabel }) {
   const displayName = getProfileDisplayName(user);
   const initials = getProfileInitials(user);
 
+  const closeIfMobile = () => {
+    if (typeof onClose === "function") onClose();
+  };
+
   return (
-    <aside className="sidebar-premium">
+    <aside className={`sidebar-premium ${mobileOpen ? "mobile-open" : ""}`}>
+      <div className="lg:hidden flex items-center justify-between px-2 mb-4">
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">
+          Menu
+        </p>
+        <button
+          onClick={closeIfMobile}
+          className="saas-btn saas-btn-secondary p-2"
+          aria-label="Close sidebar"
+        >
+          <X size={16} />
+        </button>
+      </div>
       {/* Brand */}
       <div className="px-2 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#0b525b] flex items-center justify-center shrink-0 shadow-sm">
             <BriefcaseBusiness size={18} className="text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-base font-semibold text-slate-900 truncate font-[Poppins]">
+            <p className="text-base font-semibold text-slate-900 truncate">
               TalentOps
             </p>
             <p className="text-xs text-slate-500">{roleLabel}</p>
@@ -50,6 +74,7 @@ export default function Sidebar({ links, title, roleLabel }) {
               key={link.to}
               to={link.to}
               end={link.exact}
+              onClick={closeIfMobile}
               className={({ isActive }) =>
                 `nav-link ${isActive ? "active" : ""}`
               }
@@ -70,7 +95,7 @@ export default function Sidebar({ links, title, roleLabel }) {
             className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${
               isListening
                 ? "bg-red-50 text-red-500 border border-red-200"
-                : "bg-slate-900 text-white border border-slate-900 hover:bg-slate-800"
+                : "bg-[#0b525b] text-white border border-[#0b525b] hover:bg-[#073d45]"
             }`}
           >
             <Mic size={18} />
@@ -95,13 +120,17 @@ export default function Sidebar({ links, title, roleLabel }) {
               className="w-9 h-9 rounded-full object-cover border border-slate-200"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xs font-semibold text-indigo-600">
+            <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-xs font-semibold text-teal-700">
               {initials}
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-700 truncate">{displayName}</p>
-            <p className="text-xs text-slate-400 truncate">{user?.email || roleLabel}</p>
+            <p className="text-sm font-medium text-slate-700 truncate">
+              {displayName}
+            </p>
+            <p className="text-xs text-slate-400 truncate">
+              {user?.email || roleLabel}
+            </p>
           </div>
         </div>
 

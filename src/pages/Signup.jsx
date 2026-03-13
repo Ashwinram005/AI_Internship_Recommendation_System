@@ -93,7 +93,9 @@ export default function Signup() {
       const methods = await fetchSignInMethodsForEmail(auth, email);
       if (methods.length > 0) {
         const existingRole = await detectExistingRoleByEmail(email);
-        setError(`This email is already registered as ${roleLabel(existingRole || "user")}.`);
+        setError(
+          `This email is already registered as ${roleLabel(existingRole || "user")}.`,
+        );
         return;
       }
 
@@ -101,23 +103,31 @@ export default function Signup() {
       const uid = cred.user.uid;
 
       if (role === "company") {
-        await setDoc(doc(db, "companies", uid), {
-          userId: uid,
-          name,
-          email,
-          role: "company",
-          photoURL: cred.user.photoURL || "",
-          createdAt: serverTimestamp(),
-        }, { merge: true });
+        await setDoc(
+          doc(db, "companies", uid),
+          {
+            userId: uid,
+            name,
+            email,
+            role: "company",
+            photoURL: cred.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
         await deleteDoc(doc(db, "users", uid));
       } else {
-        await setDoc(doc(db, "users", uid), {
-          name,
-          email,
-          role: "user",
-          photoURL: cred.user.photoURL || "",
-          createdAt: serverTimestamp(),
-        }, { merge: true });
+        await setDoc(
+          doc(db, "users", uid),
+          {
+            name,
+            email,
+            role: "user",
+            photoURL: cred.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
         await deleteDoc(doc(db, "companies", uid));
       }
 
@@ -143,7 +153,9 @@ export default function Signup() {
       const finalEmail = cred.user.email || email;
 
       const existingByUid = await detectExistingRoleByUid(cred.user.uid);
-      const existingByEmail = finalEmail ? await detectExistingRoleByEmail(finalEmail) : null;
+      const existingByEmail = finalEmail
+        ? await detectExistingRoleByEmail(finalEmail)
+        : null;
       const existingRole = existingByUid || existingByEmail;
 
       if (existingRole) {
@@ -155,26 +167,37 @@ export default function Signup() {
       }
 
       const uid = cred.user.uid;
-      const finalName = name || cred.user.displayName || (role === "company" ? "Company" : "User");
+      const finalName =
+        name ||
+        cred.user.displayName ||
+        (role === "company" ? "Company" : "User");
 
       if (role === "company") {
-        await setDoc(doc(db, "companies", uid), {
-          userId: uid,
-          name: finalName,
-          email: finalEmail,
-          role: "company",
-          photoURL: cred.user.photoURL || "",
-          createdAt: serverTimestamp(),
-        }, { merge: true });
+        await setDoc(
+          doc(db, "companies", uid),
+          {
+            userId: uid,
+            name: finalName,
+            email: finalEmail,
+            role: "company",
+            photoURL: cred.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
         await deleteDoc(doc(db, "users", uid));
       } else {
-        await setDoc(doc(db, "users", uid), {
-          name: finalName,
-          email: finalEmail,
-          role: "user",
-          photoURL: cred.user.photoURL || "",
-          createdAt: serverTimestamp(),
-        }, { merge: true });
+        await setDoc(
+          doc(db, "users", uid),
+          {
+            name: finalName,
+            email: finalEmail,
+            role: "user",
+            photoURL: cred.user.photoURL || "",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
         await deleteDoc(doc(db, "companies", uid));
       }
 
@@ -184,7 +207,9 @@ export default function Signup() {
       navigate(getDefaultRouteByRole(appUser.role), { replace: true });
     } catch (err) {
       sessionStorage.removeItem("auth_redirect_suppressed");
-      setError(await getFriendlySignupError(err, err.customData?.email || email));
+      setError(
+        await getFriendlySignupError(err, err.customData?.email || email),
+      );
     } finally {
       setGoogleLoading(false);
     }
@@ -199,7 +224,9 @@ export default function Signup() {
           </div>
           <div>
             <p className="font-bold text-slate-900">TalentOps</p>
-            <p className="text-xs text-slate-500">Professional Hiring Workflows</p>
+            <p className="text-xs text-slate-500">
+              Professional Hiring Workflows
+            </p>
           </div>
         </div>
 
@@ -213,19 +240,28 @@ export default function Signup() {
           </p>
         </div>
 
-        <p className="text-xs text-slate-500">Role-aware onboarding and secure access control.</p>
+        <p className="text-xs text-slate-500">
+          Role-aware onboarding and secure access control.
+        </p>
       </section>
 
       <section className="flex items-center justify-center p-6 lg:p-10">
         <div className="w-full max-w-md glass-card p-7 sm:p-8 bg-white">
           <h2 className="text-2xl font-bold text-slate-900">Create Account</h2>
-          <p className="text-sm text-slate-500 mt-1">Set up your platform identity</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Set up your platform identity
+          </p>
 
           <form onSubmit={onEmailSignup} className="mt-6 space-y-4">
             <div>
-              <label className="text-sm font-semibold text-slate-600">Full Name</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Full Name
+              </label>
               <div className="relative mt-1.5">
-                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <User
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   required
@@ -238,9 +274,14 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-600">Email</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Email
+              </label>
               <div className="relative mt-1.5">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="email"
                   required
@@ -253,9 +294,14 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-600">Password</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Password
+              </label>
               <div className="relative mt-1.5">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="password"
                   required
@@ -268,7 +314,9 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-600">Role</label>
+              <label className="text-sm font-semibold text-slate-600">
+                Role
+              </label>
               <div className="grid grid-cols-2 gap-2 mt-1.5">
                 <button
                   type="button"
@@ -293,7 +341,10 @@ export default function Signup() {
               </div>
             )}
 
-            <button className="saas-btn saas-btn-primary w-full" disabled={loading}>
+            <button
+              className="saas-btn saas-btn-primary w-full"
+              disabled={loading}
+            >
               {loading ? "Creating account..." : "Create Account"}
             </button>
 
@@ -303,13 +354,18 @@ export default function Signup() {
               className="saas-btn saas-btn-secondary w-full"
               disabled={googleLoading}
             >
-              {googleLoading ? "Connecting..." : `Continue with Google as ${roleLabel(role)}`}
+              {googleLoading
+                ? "Connecting..."
+                : `Continue with Google as ${roleLabel(role)}`}
             </button>
           </form>
 
           <p className="mt-6 text-sm text-slate-500 text-center">
             Already registered?{" "}
-            <Link to="/login" className="font-semibold text-slate-900 hover:underline">
+            <Link
+              to="/login"
+              className="font-semibold text-slate-900 hover:underline"
+            >
               Sign In
             </Link>
           </p>

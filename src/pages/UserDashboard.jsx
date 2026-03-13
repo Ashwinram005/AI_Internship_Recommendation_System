@@ -11,8 +11,12 @@ export default function UserDashboard() {
   return (
     <div className="max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Candidate Workbench</h1>
-        <p className="text-slate-500 mt-1">Track opportunities, applications, and progress in one place.</p>
+        <h1 className="text-2xl font-bold text-slate-900">
+          Candidate Workbench
+        </h1>
+        <p className="text-slate-500 mt-1">
+          Track opportunities, applications, and progress in one place.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -23,8 +27,12 @@ export default function UserDashboard() {
               <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
                 <Icon size={16} />
               </div>
-              <p className="text-2xl font-extrabold text-slate-900 mt-3">{item.value}</p>
-              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">{item.label}</p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-3">
+                {item.value}
+              </p>
+              <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">
+                {item.label}
+              </p>
             </div>
           );
         })}
@@ -35,7 +43,8 @@ export default function UserDashboard() {
           <h2 className="text-lg font-bold text-slate-900">Today</h2>
           <div className="mt-4 space-y-3 text-sm">
             <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
-              2 applications moved to <span className="font-semibold">In Review</span>.
+              2 applications moved to{" "}
+              <span className="font-semibold">In Review</span>.
             </div>
             <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
               1 application deadline approaching in the next 24 hours.
@@ -49,9 +58,12 @@ export default function UserDashboard() {
         <div className="glass-card p-5">
           <h2 className="text-lg font-bold text-slate-900">Next Best Action</h2>
           <p className="text-sm text-slate-600 mt-3">
-            Review your pending applications and withdraw outdated submissions to keep your pipeline clean.
+            Review your pending applications and withdraw outdated submissions
+            to keep your pipeline clean.
           </p>
-          <button className="saas-btn saas-btn-primary w-full mt-4">Go to Applications</button>
+          <button className="saas-btn saas-btn-primary w-full mt-4">
+            Go to Applications
+          </button>
         </div>
       </div>
     </div>

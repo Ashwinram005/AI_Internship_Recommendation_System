@@ -46,7 +46,10 @@ export default function AILanding() {
         skillGaps: ["System Design", "Cloud Workflows"],
       });
       setAnalyzing(false);
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 120);
+      setTimeout(
+        () => resultRef.current?.scrollIntoView({ behavior: "smooth" }),
+        120,
+      );
     }, 2200);
   };
 
@@ -60,12 +63,18 @@ export default function AILanding() {
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900">TalentOps</p>
-              <p className="text-[11px] text-slate-500">Resume Intelligence Suite</p>
+              <p className="text-[11px] text-slate-500">
+                Resume Intelligence Suite
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="saas-btn saas-btn-secondary">Sign In</Link>
-            <Link to="/signup" className="saas-btn saas-btn-primary">Create Account</Link>
+            <Link to="/login" className="saas-btn saas-btn-secondary">
+              Sign In
+            </Link>
+            <Link to="/signup" className="saas-btn saas-btn-primary">
+              Create Account
+            </Link>
           </div>
         </div>
       </header>
@@ -80,9 +89,9 @@ export default function AILanding() {
               Resume screening that feels operational, not experimental.
             </h1>
             <p className="text-slate-600 text-base max-w-2xl">
-              Upload a resume and get a structured assessment with scoring, ATS check,
-              and focused improvement suggestions. Built for serious hiring and
-              candidate preparation workflows.
+              Upload a resume and get a structured assessment with scoring, ATS
+              check, and focused improvement suggestions. Built for serious
+              hiring and candidate preparation workflows.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
               <div className="glass-card p-4">
@@ -91,18 +100,24 @@ export default function AILanding() {
               </div>
               <div className="glass-card p-4">
                 <p className="text-2xl font-extrabold text-slate-900">77%</p>
-                <p className="text-xs text-slate-500 mt-1">Avg ATS readiness uplift</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Avg ATS readiness uplift
+                </p>
               </div>
               <div className="glass-card p-4">
                 <p className="text-2xl font-extrabold text-slate-900">2 min</p>
-                <p className="text-xs text-slate-500 mt-1">Typical review cycle</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Typical review cycle
+                </p>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-5 glass-card p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Start Resume Review</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Start Resume Review
+              </h2>
               <p className="text-sm text-slate-500 mt-1">
                 Upload one file in PDF or DOCX format.
               </p>
@@ -144,17 +159,23 @@ export default function AILanding() {
           <div className="glass-card p-5">
             <LineChart size={18} className="text-slate-700" />
             <h3 className="font-bold text-slate-900 mt-3">Score Precision</h3>
-            <p className="text-sm text-slate-600 mt-1">Clear score model across structure, relevance, and readability.</p>
+            <p className="text-sm text-slate-600 mt-1">
+              Clear score model across structure, relevance, and readability.
+            </p>
           </div>
           <div className="glass-card p-5">
             <Shield size={18} className="text-slate-700" />
             <h3 className="font-bold text-slate-900 mt-3">ATS Coverage</h3>
-            <p className="text-sm text-slate-600 mt-1">Helps ensure resume formatting and language pass ATS filtering.</p>
+            <p className="text-sm text-slate-600 mt-1">
+              Helps ensure resume formatting and language pass ATS filtering.
+            </p>
           </div>
           <div className="glass-card p-5">
             <FileText size={18} className="text-slate-700" />
             <h3 className="font-bold text-slate-900 mt-3">Actionable Notes</h3>
-            <p className="text-sm text-slate-600 mt-1">Specific next-step improvements instead of generic feedback.</p>
+            <p className="text-sm text-slate-600 mt-1">
+              Specific next-step improvements instead of generic feedback.
+            </p>
           </div>
         </section>
       </main>

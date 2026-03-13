@@ -12,7 +12,10 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { createApplication, getApplicationsByUser } from "../../services/applicationService";
+import {
+  createApplication,
+  getApplicationsByUser,
+} from "../../services/applicationService";
 import { getPostingById } from "../../services/postingService";
 import { getResumesByUser } from "../../services/resumeService";
 
@@ -101,7 +104,9 @@ export default function JobDetails() {
       return;
     }
 
-    const selectedResume = resumes.find((resume) => resume.id === selectedResumeId);
+    const selectedResume = resumes.find(
+      (resume) => resume.id === selectedResumeId,
+    );
     if (!selectedResume) {
       setError("Selected resume is not available. Please choose again.");
       return;
@@ -135,7 +140,9 @@ export default function JobDetails() {
   if (loading) {
     return (
       <div className="max-w-5xl">
-        <div className="glass-card p-8 text-sm text-slate-500">Loading job details...</div>
+        <div className="glass-card p-8 text-sm text-slate-500">
+          Loading job details...
+        </div>
       </div>
     );
   }
@@ -151,7 +158,9 @@ export default function JobDetails() {
         </button>
         <div className="glass-card p-10 text-center">
           <p className="text-slate-700 font-medium">Job not found</p>
-          <p className="text-sm text-slate-500 mt-1">This listing may have been removed.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            This listing may have been removed.
+          </p>
         </div>
       </div>
     );
@@ -182,7 +191,9 @@ export default function JobDetails() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wide">
-              <span className="bg-slate-100 px-2 py-0.5 rounded">{job.type || "job"}</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded">
+                {job.type || "job"}
+              </span>
               <span>Job Board Listing</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mt-2 font-[Poppins]">
@@ -205,7 +216,9 @@ export default function JobDetails() {
             <span
               className={`saas-badge ${job.status === "active" ? "badge-success" : "badge-warning"}`}
             >
-              {job.status === "active" ? "Open for Applications" : "Applications Closed"}
+              {job.status === "active"
+                ? "Open for Applications"
+                : "Applications Closed"}
             </span>
             {appliedJobIds.has(job.id) ? (
               <span className="saas-badge badge-info">Already Applied</span>
@@ -226,7 +239,9 @@ export default function JobDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="glass-card p-6 lg:col-span-2 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Role Description</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Role Description
+            </h2>
             <p className="text-sm text-slate-500 mt-1">
               Complete details for this position.
             </p>
@@ -240,11 +255,17 @@ export default function JobDetails() {
           <h3 className="text-lg font-semibold text-slate-900">Key Details</h3>
           <div className="space-y-3 text-sm">
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <p className="text-slate-400 text-xs uppercase tracking-wide">Job Type</p>
-              <p className="text-slate-700 font-medium mt-1 uppercase">{job.type || "job"}</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide">
+                Job Type
+              </p>
+              <p className="text-slate-700 font-medium mt-1 uppercase">
+                {job.type || "job"}
+              </p>
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <p className="text-slate-400 text-xs uppercase tracking-wide">Required Skills</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide">
+                Required Skills
+              </p>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {(job.skills || "")
                   .split(",")
@@ -258,11 +279,15 @@ export default function JobDetails() {
                       {skill.trim()}
                     </span>
                   ))}
-                {!job.skills && <span className="text-slate-500">Not specified</span>}
+                {!job.skills && (
+                  <span className="text-slate-500">Not specified</span>
+                )}
               </div>
             </div>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <p className="text-slate-400 text-xs uppercase tracking-wide">Company Website</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide">
+                Company Website
+              </p>
               <p className="text-slate-700 font-medium mt-1 inline-flex items-center gap-1.5">
                 <Globe size={13} />
                 Not available
@@ -277,7 +302,9 @@ export default function JobDetails() {
           <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Apply for this role</h3>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Apply for this role
+                </h3>
                 <p className="text-sm text-slate-500 mt-1">
                   Select the resume you want to use for this application.
                 </p>
@@ -292,7 +319,9 @@ export default function JobDetails() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-600">Choose Resume</label>
+              <label className="text-sm font-medium text-slate-600">
+                Choose Resume
+              </label>
               <div className="relative">
                 <FileText
                   size={16}
@@ -338,7 +367,8 @@ export default function JobDetails() {
                 className="mt-0.5"
               />
               <span>
-                I confirm this resume is updated and I want to apply for this role.
+                I confirm this resume is updated and I want to apply for this
+                role.
               </span>
             </label>
           </div>

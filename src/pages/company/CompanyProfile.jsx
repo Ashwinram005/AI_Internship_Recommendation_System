@@ -3,7 +3,10 @@ import { Building2, Globe, Mail, Save, UserRound } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getCompanyPostings } from "../../services/postingService";
 import { getApplicationsByJobIds } from "../../services/applicationService";
-import { getProfileDisplayName, getProfileInitials } from "../../routes/routeUtils";
+import {
+  getProfileDisplayName,
+  getProfileInitials,
+} from "../../routes/routeUtils";
 
 export default function CompanyProfile() {
   const { user, updateProfile } = useAuth();
@@ -13,7 +16,10 @@ export default function CompanyProfile() {
     industry: "",
     about: "",
   });
-  const [stats, setStats] = useState({ activePostings: 0, totalApplications: 0 });
+  const [stats, setStats] = useState({
+    activePostings: 0,
+    totalApplications: 0,
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -103,7 +109,9 @@ export default function CompanyProfile() {
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-base font-semibold text-slate-900 truncate">{displayName}</p>
+              <p className="text-base font-semibold text-slate-900 truncate">
+                {displayName}
+              </p>
               <p className="text-sm text-slate-500 flex items-center gap-1 mt-1 truncate">
                 <Mail size={14} /> {user?.email || "-"}
               </p>
@@ -116,18 +124,24 @@ export default function CompanyProfile() {
           <div className="mt-5 pt-4 border-t border-slate-200 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Active postings</span>
-              <span className="font-semibold text-slate-900">{stats.activePostings}</span>
+              <span className="font-semibold text-slate-900">
+                {stats.activePostings}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Applications received</span>
-              <span className="font-semibold text-slate-900">{stats.totalApplications}</span>
+              <span className="font-semibold text-slate-900">
+                {stats.totalApplications}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="glass-card p-5 lg:col-span-2 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Business Details</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Business Details
+            </h2>
             <p className="text-sm text-slate-500 mt-1">
               Keep your company information up-to-date for candidates.
             </p>
@@ -135,37 +149,55 @@ export default function CompanyProfile() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-slate-600">Company Name</label>
+              <label className="text-sm font-medium text-slate-600">
+                Company Name
+              </label>
               <div className="relative">
-                <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Building2
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   value={form.name}
-                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-600">Industry</label>
+              <label className="text-sm font-medium text-slate-600">
+                Industry
+              </label>
               <input
                 type="text"
                 value={form.industry}
-                onChange={(e) => setForm((prev) => ({ ...prev, industry: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, industry: e.target.value }))
+                }
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
                 placeholder="Software, Finance, Healthcare..."
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-600">Website</label>
+              <label className="text-sm font-medium text-slate-600">
+                Website
+              </label>
               <div className="relative">
-                <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Globe
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="text"
                   value={form.website}
-                  onChange={(e) => setForm((prev) => ({ ...prev, website: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, website: e.target.value }))
+                  }
                   className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
                   placeholder="https://company.com"
                 />
@@ -173,11 +205,15 @@ export default function CompanyProfile() {
             </div>
 
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-slate-600">About Company</label>
+              <label className="text-sm font-medium text-slate-600">
+                About Company
+              </label>
               <textarea
                 rows={4}
                 value={form.about}
-                onChange={(e) => setForm((prev) => ({ ...prev, about: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, about: e.target.value }))
+                }
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 resize-none"
                 placeholder="Short company overview shown to candidates..."
               />
