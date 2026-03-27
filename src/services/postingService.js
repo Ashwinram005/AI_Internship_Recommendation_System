@@ -4,8 +4,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   serverTimestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -34,25 +36,34 @@ export const getPostingById = async (postingId) => {
   return hydratePosting(snap);
 };
 
-export const getVisiblePostingsForCandidates = async () => {
+export const getAllPostings = async () => {
   const snap = await getDocs(collection(db, JOBS_COLLECTION));
-  return snap.docs
-    .map(hydratePosting)
-    .filter((posting) => posting.status !== "deleted");
+  return snap.docs.map(hydratePosting);
+};
+
+export const getVisiblePostingsForCandidates = async () => {
+  const q = query(
+    collection(db, JOBS_COLLECTION),
+    where("status", "in", ["active", "hold"]),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(hydratePosting);
 };
 
 export const getActivePostings = async () => {
-  const snap = await getDocs(collection(db, JOBS_COLLECTION));
-  return snap.docs
-    .map(hydratePosting)
-    .filter((posting) => posting.status === "active");
+  const q = query(collection(db, JOBS_COLLECTION), where("status", "==", "active"));
+  const snap = await getDocs(q);
+  return snap.docs.map(hydratePosting);
 };
 
 export const getCompanyPostings = async (companyId) => {
-  const snap = await getDocs(collection(db, JOBS_COLLECTION));
-  return snap.docs
-    .map(hydratePosting)
-    .filter((posting) => posting.companyId === companyId);
+  if (!companyId) return [];
+  const q = query(
+    collection(db, JOBS_COLLECTION),
+    where("companyId", "==", companyId),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(hydratePosting);
 };
 
 export const setPostingStatus = async (postingId, status) => {

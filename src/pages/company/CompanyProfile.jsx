@@ -14,6 +14,8 @@ export default function CompanyProfile() {
     name: "",
     website: "",
     industry: "",
+    companySize: "",
+    location: "",
     about: "",
   });
   const [stats, setStats] = useState({
@@ -28,10 +30,11 @@ export default function CompanyProfile() {
     setForm({
       name: user?.name || "",
       website: user?.website || "",
-      industry: user?.industry || "",
-      about: user?.about || "",
+      companySize: user?.companySize || "",
+      location: user?.location || "",
+      about: user?.about || user?.tagline || "",
     });
-  }, [user?.name, user?.website, user?.industry, user?.about]);
+  }, [user?.name, user?.website, user?.industry, user?.companySize, user?.location, user?.about, user?.tagline]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -39,7 +42,10 @@ export default function CompanyProfile() {
 
       try {
         const jobs = await getCompanyPostings(user.uid);
-        const apps = await getApplicationsByJobIds(jobs.map((job) => job.id));
+        const apps = await getApplicationsByJobIds(
+          jobs.map((job) => job.id),
+          { companyId: user.uid },
+        );
         setStats({
           activePostings: jobs.filter((job) => job.status === "active").length,
           totalApplications: apps.length,
@@ -68,6 +74,8 @@ export default function CompanyProfile() {
         name: trimmedName,
         website: form.website.trim(),
         industry: form.industry.trim(),
+        companySize: form.companySize,
+        location: form.location.trim(),
         about: form.about.trim(),
       });
 
@@ -202,6 +210,41 @@ export default function CompanyProfile() {
                   placeholder="https://company.com"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-600">
+                Company Size
+              </label>
+              <select
+                value={form.companySize}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, companySize: e.target.value }))
+                }
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
+              >
+                <option value="">Select size...</option>
+                <option value="1-10">1-10</option>
+                <option value="11-50">11-50</option>
+                <option value="51-200">51-200</option>
+                <option value="201-500">201-500</option>
+                <option value="500+">500+</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-600">
+                Headquarters
+              </label>
+              <input
+                type="text"
+                value={form.location}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, location: e.target.value }))
+                }
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
+                placeholder="City, Country"
+              />
             </div>
 
             <div className="space-y-1.5 md:col-span-2">

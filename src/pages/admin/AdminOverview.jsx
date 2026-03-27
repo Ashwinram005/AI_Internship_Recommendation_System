@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { getJobs, getUserResumes } from "../../utils/storage";
 import {
   Users,
   Building,
@@ -8,18 +7,34 @@ import {
   CheckCircle2,
   RefreshCcw,
 } from "lucide-react";
+import { getAllPostings } from "../../services/postingService";
+import { getAllUsers, getAllCompanies } from "../../services/userProfileService";
 
 export default function AdminOverview() {
   const [stats, setStats] = useState({ users: 0, companies: 0, jobs: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const jobs = getJobs();
-    const resumes = getUserResumes();
-    setStats({
-      users: resumes.length || 15,
-      companies: new Set(jobs.map((j) => j.company)).size || 3,
-      jobs: jobs.length,
-    });
+    const loadStats = async () => {
+      try {
+        setLoading(true);
+        const [users, companies, jobs] = await Promise.all([
+          getAllUsers(),
+          getAllCompanies(),
+          getAllPostings(),
+        ]);
+        setStats({
+          users: users.length,
+          companies: companies.length,
+          jobs: jobs.length,
+        });
+      } catch (err) {
+        console.error("Failed to load admin stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
   }, []);
 
   const cards = [

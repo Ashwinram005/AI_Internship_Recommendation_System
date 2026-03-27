@@ -214,11 +214,10 @@ export default function AppliedJobs() {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`rounded-lg border px-3 py-2 text-left transition ${
-                statusFilter === status
+              className={`rounded-lg border px-3 py-2 text-left transition ${statusFilter === status
                   ? "border-[#0b525b] bg-[#e5f4f6]"
                   : "border-slate-200 bg-white hover:bg-slate-50"
-              }`}
+                }`}
             >
               <p className="text-[10px] uppercase tracking-wide text-slate-400">
                 {getApplicationStatusLabel(status)}
@@ -266,11 +265,10 @@ export default function AppliedJobs() {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-md text-xs border transition ${
-                statusFilter === status
+              className={`px-3 py-1.5 rounded-md text-xs border transition ${statusFilter === status
                   ? "bg-[#0b525b] text-white border-[#0b525b]"
                   : "text-slate-600 border-slate-200 hover:bg-slate-100"
-              }`}
+                }`}
             >
               {status === "all" ? "All" : getApplicationStatusLabel(status)}
             </button>
@@ -390,11 +388,10 @@ export default function AppliedJobs() {
                               className="flex items-center shrink-0"
                             >
                               <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center border text-[11px] font-semibold ${
-                                  complete
+                                className={`w-7 h-7 rounded-full flex items-center justify-center border text-[11px] font-semibold ${complete
                                     ? "bg-[#0b525b] text-white border-[#0b525b]"
                                     : "bg-white text-slate-400 border-slate-200"
-                                }`}
+                                  }`}
                               >
                                 {complete ? (
                                   <CheckCircle2 size={13} />

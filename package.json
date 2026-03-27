@@ -12,9 +12,11 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "axios": "^1.13.6",
+    "compromise": "^14.15.0",
     "firebase": "^12.10.0",
     "lucide-react": "^0.575.0",
     "mammoth": "^1.11.0",
+    "openai": "^6.32.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",

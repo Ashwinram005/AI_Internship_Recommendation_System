@@ -31,6 +31,18 @@ export default function Login() {
     }
   }, [location.state]);
 
+  const getFriendlyLoginError = (err) => {
+    if (err?.code === "auth/configuration-not-found") {
+      return "Firebase Auth is not fully configured for this project. In Firebase Console, enable Authentication (Email/Password and Google), then restart the app.";
+    }
+
+    if (err?.code === "auth/unauthorized-domain") {
+      return "This domain is not authorized in Firebase Auth. Add localhost to Authentication > Settings > Authorized domains.";
+    }
+
+    return err?.message || "Unable to sign in.";
+  };
+
   const onEmailLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -41,7 +53,7 @@ export default function Login() {
       login(appUser);
       navigate(getDefaultRouteByRole(appUser.role), { replace: true });
     } catch (err) {
-      setError(err.message || "Unable to sign in.");
+      setError(getFriendlyLoginError(err));
     } finally {
       setLoading(false);
     }
@@ -58,7 +70,7 @@ export default function Login() {
       login(appUser);
       navigate(getDefaultRouteByRole(appUser.role), { replace: true });
     } catch (err) {
-      setError(err.message || "Google sign in failed.");
+      setError(getFriendlyLoginError(err));
     } finally {
       setGoogleLoading(false);
     }

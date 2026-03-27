@@ -39,7 +39,7 @@ import {
   openResumeInNewTab,
 } from "../../utils/resumePreview";
 import {
-  getGeminiKeyAvailable,
+  getGroqKeyAvailable,
   rankCandidatesForJob,
 } from "../../services/aiMatchingService";
 
@@ -80,7 +80,9 @@ export default function ManageJobs() {
       setJobs(companyJobs);
 
       const jobIds = companyJobs.map((job) => job.id);
-      const companyApps = await getApplicationsByJobIds(jobIds);
+      const companyApps = await getApplicationsByJobIds(jobIds, {
+        companyId: user.uid,
+      });
       setApplications(companyApps);
 
       const [profiles, resumes] = await Promise.all([
@@ -158,9 +160,9 @@ export default function ManageJobs() {
 
         setCandidateScoreByApplicationId(mapped);
         setRankingNotice(
-          getGeminiKeyAvailable()
+          getGroqKeyAvailable()
             ? ""
-            : "Gemini API key missing. Showing fallback keyword-based ranking.",
+            : "Groq API key missing. Showing fallback keyword-based ranking.",
         );
       } catch (err) {
         console.error("Candidate ranking failed:", err);
@@ -528,8 +530,8 @@ export default function ManageJobs() {
                       <td className="text-slate-500">
                         {app.dateApplied?.seconds
                           ? new Date(
-                              app.dateApplied.seconds * 1000,
-                            ).toLocaleString()
+                            app.dateApplied.seconds * 1000,
+                          ).toLocaleString()
                           : "-"}
                       </td>
                       <td>
@@ -716,11 +718,11 @@ export default function ManageJobs() {
                         {!canDeleteApplicationRecordStatus(
                           selectedApplication.status,
                         ) && (
-                          <p className="text-xs text-slate-500 mt-2">
-                            Permanent delete is available only for final
-                            applications.
-                          </p>
-                        )}
+                            <p className="text-xs text-slate-500 mt-2">
+                              Permanent delete is available only for final
+                              applications.
+                            </p>
+                          )}
                       </div>
                     </div>
 
@@ -1010,15 +1012,16 @@ export default function ManageJobs() {
                     </td>
                     <td>
                       <span
-                        className={`saas-badge ${
-                          isActive
+                        className={`saas-badge ${isActive
                             ? "badge-success"
                             : isDisabled
                               ? "badge-warning"
-                              : "badge-info"
-                        }`}
+                              : job.status === "hold"
+                                ? "badge-info"
+                                : "badge-info"
+                          }`}
                       >
-                        {job.status}
+                        {job.status === "hold" ? "On Hold" : job.status}
                       </span>
                     </td>
                     <td>
@@ -1033,6 +1036,28 @@ export default function ManageJobs() {
                     </td>
                     <td className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {isActive && (
+                          <button
+                            onClick={() =>
+                              changePostingStatus(job.id, "hold")
+                            }
+                            className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs border-amber-200 text-amber-700 hover:bg-amber-50"
+                          >
+                            Hold
+                          </button>
+                        )}
+
+                        {job.status === "hold" && (
+                          <button
+                            onClick={() =>
+                              changePostingStatus(job.id, "active")
+                            }
+                            className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                          >
+                            Resume
+                          </button>
+                        )}
+
                         {isActive ? (
                           <button
                             onClick={() =>
@@ -1043,14 +1068,16 @@ export default function ManageJobs() {
                             Disable
                           </button>
                         ) : (
-                          <button
-                            onClick={() =>
-                              changePostingStatus(job.id, "active")
-                            }
-                            className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
-                          >
-                            Enable
-                          </button>
+                          !isActive && job.status !== "hold" && (
+                            <button
+                              onClick={() =>
+                                changePostingStatus(job.id, "active")
+                              }
+                              className="saas-btn saas-btn-secondary py-1.5 px-3 text-xs"
+                            >
+                              Enable
+                            </button>
+                          )
                         )}
 
                         <button

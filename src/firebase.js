@@ -4,6 +4,27 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+const requiredFirebaseEnvVars = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+  "VITE_FIREBASE_STORAGE_BUCKET",
+  "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  "VITE_FIREBASE_APP_ID",
+];
+
+const missingFirebaseEnvVars = requiredFirebaseEnvVars.filter(
+  (key) => !import.meta.env[key],
+);
+
+if (missingFirebaseEnvVars.length > 0) {
+  throw new Error(
+    `Missing Firebase env values: ${missingFirebaseEnvVars.join(
+      ", ",
+    )}. Update .env and restart the Vite dev server.`,
+  );
+}
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -16,7 +37,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+if (typeof window !== "undefined") {
+  getAnalytics(app);
+}
 
 // Initialize Auth and Firestore
 export const auth = getAuth(app);

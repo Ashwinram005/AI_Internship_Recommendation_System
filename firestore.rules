@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    match /companies/{companyId} {
+      allow read: if isSignedIn();
+      allow create, update: if isOwner(companyId) || (
+        isSignedIn() && request.resource.data.seedBatchId is string
+      );
+      allow delete: if isOwner(companyId);
+    }
+
+    match /jobs/{jobId} {
+      allow read: if isSignedIn();
+      allow create: if (
+        isSignedIn() && request.resource.data.companyId == request.auth.uid
+      ) || (
+        isSignedIn() && request.resource.data.seedBatchId is string
+      );
+      allow update, delete: if isSignedIn() && resource.data.companyId == request.auth.uid;
+    }
+
+    match /resumes/{resumeId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.companyId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.companyId == request.auth.uid
+      );
+    }
+  }
+}

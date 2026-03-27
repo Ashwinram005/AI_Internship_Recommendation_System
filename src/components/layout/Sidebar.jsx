@@ -92,11 +92,10 @@ export default function Sidebar({
           <button
             onClick={onVoiceClick}
             disabled={isListening}
-            className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${
-              isListening
+            className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${isListening
                 ? "bg-red-50 text-red-500 border border-red-200"
                 : "bg-[#0b525b] text-white border border-[#0b525b] hover:bg-[#073d45]"
-            }`}
+              }`}
           >
             <Mic size={18} />
             <span>{isListening ? "Listening..." : "Voice Command"}</span>

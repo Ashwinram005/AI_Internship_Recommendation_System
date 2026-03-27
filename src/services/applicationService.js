@@ -184,7 +184,7 @@ export const getApplicationsByCompany = async (companyId) => {
   });
 };
 
-export const getApplicationsByJobIds = async (jobIds = []) => {
+export const getApplicationsByJobIds = async (jobIds = [], constraints = {}) => {
   if (!jobIds.length) return [];
 
   // Firestore where-in supports max 10 IDs, so split in chunks.
@@ -195,7 +195,16 @@ export const getApplicationsByJobIds = async (jobIds = []) => {
 
   const allResults = [];
   for (const ids of chunks) {
-    const q = query(collection(db, APPLICATIONS_COLLECTION), where("jobId", "in", ids));
+    let q = query(collection(db, APPLICATIONS_COLLECTION), where("jobId", "in", ids));
+
+    // Satisfy security rules by adding explicit ownership filters if provided
+    if (constraints.companyId) {
+      q = query(q, where("companyId", "==", constraints.companyId));
+    }
+    if (constraints.userId) {
+      q = query(q, where("userId", "==", constraints.userId));
+    }
+
     const snap = await getDocs(q);
     allResults.push(
       ...snap.docs.map((d) => {

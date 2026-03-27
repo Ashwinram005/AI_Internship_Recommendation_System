@@ -22,7 +22,7 @@ import { getApplicationsByUser } from "../../services/applicationService";
 import { getVisiblePostingsForCandidates } from "../../services/postingService";
 import { getResumesByUser } from "../../services/resumeService";
 import {
-  getGeminiKeyAvailable,
+  getGroqKeyAvailable,
   rankJobsForResume,
 } from "../../services/aiMatchingService";
 
@@ -94,9 +94,9 @@ export default function JobsList() {
         }, {});
 
         setJobScoresById(mapped);
-        if (!getGeminiKeyAvailable()) {
+        if (!getGroqKeyAvailable()) {
           setAiNotice(
-            "Gemini API key missing. Showing fallback keyword-based ranking.",
+            "Groq API key missing. Showing fallback keyword-based ranking.",
           );
         } else {
           setAiNotice("");
@@ -259,11 +259,10 @@ export default function JobsList() {
                 <button
                   key={value}
                   onClick={() => setTypeFilter(value)}
-                  className={`px-3 py-1.5 rounded-md text-xs border ${
-                    typeFilter === value
+                  className={`px-3 py-1.5 rounded-md text-xs border ${typeFilter === value
                       ? "bg-[#0b525b] border-[#0b525b] text-white"
                       : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
-                  }`}
+                    }`}
                 >
                   {value === "all"
                     ? "All"
@@ -284,11 +283,10 @@ export default function JobsList() {
                 <button
                   key={value}
                   onClick={() => setStatusFilter(value)}
-                  className={`px-3 py-1.5 rounded-md text-xs border ${
-                    statusFilter === value
+                  className={`px-3 py-1.5 rounded-md text-xs border ${statusFilter === value
                       ? "bg-[#c06b1a] border-[#c06b1a] text-white"
                       : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
-                  }`}
+                    }`}
                 >
                   {value === "all"
                     ? "All"
@@ -401,11 +399,13 @@ export default function JobsList() {
                               </span>
                             ) : null}
                             <span
-                              className={`saas-badge ${job.status === "active" ? "badge-success" : "badge-warning"}`}
+                              className={`saas-badge ${job.status === "active" ? "badge-success" : job.status === "hold" ? "badge-warning" : "badge-warning"}`}
                             >
                               {job.status === "active"
                                 ? "Accepting applications"
-                                : "Not receiving applications"}
+                                : job.status === "hold"
+                                  ? "No longer accepting applications"
+                                  : "Not receiving applications"}
                             </span>
                             {appliedJobIds.has(job.id) ? (
                               <span className="saas-badge badge-info">

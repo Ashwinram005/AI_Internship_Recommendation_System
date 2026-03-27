@@ -35,6 +35,13 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // New Company Fields
+  const [website, setWebsite] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [location, setLocation] = useState("");
+  const [tagline, setTagline] = useState("");
+
   const roleLabel = (value) => (value === "company" ? "Employer" : "Candidate");
 
   const detectExistingRoleByUid = async (uid) => {
@@ -48,20 +55,37 @@ export default function Signup() {
   };
 
   const detectExistingRoleByEmail = async (targetEmail) => {
-    const companySnap = await getDocs(
-      query(collection(db, "companies"), where("email", "==", targetEmail)),
-    );
-    if (!companySnap.empty) return "company";
+    try {
+      const companySnap = await getDocs(
+        query(collection(db, "companies"), where("email", "==", targetEmail)),
+      );
+      if (!companySnap.empty) return "company";
 
-    const usersSnap = await getDocs(
-      query(collection(db, "users"), where("email", "==", targetEmail)),
-    );
-    if (!usersSnap.empty) return usersSnap.docs[0].data().role || "user";
+      const usersSnap = await getDocs(
+        query(collection(db, "users"), where("email", "==", targetEmail)),
+      );
+      if (!usersSnap.empty) return usersSnap.docs[0].data().role || "user";
+    } catch {
+      // Some security rule configurations block email lookups for non-admin users.
+      return null;
+    }
 
     return null;
   };
 
   const getFriendlySignupError = async (err, fallbackEmail) => {
+    if (err.code === "permission-denied" || err.code === "firestore/permission-denied") {
+      return "Your account does not have access to this data yet. Update Firestore rules for users, companies, jobs, resumes, and applications.";
+    }
+
+    if (err.code === "auth/configuration-not-found") {
+      return "Firebase Auth is not fully configured for this project. In Firebase Console, enable Authentication (Email/Password and Google), then restart the app.";
+    }
+
+    if (err.code === "auth/unauthorized-domain") {
+      return "This domain is not authorized in Firebase Auth. Add localhost to Authentication > Settings > Authorized domains.";
+    }
+
     if (err.code === "auth/email-already-in-use") {
       const existingRole = await detectExistingRoleByEmail(fallbackEmail);
       return `This email is already registered as ${roleLabel(existingRole || "user")}.`;
@@ -92,10 +116,7 @@ export default function Signup() {
     try {
       const methods = await fetchSignInMethodsForEmail(auth, email);
       if (methods.length > 0) {
-        const existingRole = await detectExistingRoleByEmail(email);
-        setError(
-          `This email is already registered as ${roleLabel(existingRole || "user")}.`,
-        );
+        setError("This email is already registered. Please sign in instead.");
         return;
       }
 
@@ -111,6 +132,11 @@ export default function Signup() {
             email,
             role: "company",
             photoURL: cred.user.photoURL || "",
+            website,
+            industry,
+            companySize,
+            location,
+            tagline,
             createdAt: serverTimestamp(),
           },
           { merge: true },
@@ -181,6 +207,11 @@ export default function Signup() {
             email: finalEmail,
             role: "company",
             photoURL: cred.user.photoURL || "",
+            website,
+            industry,
+            companySize,
+            location,
+            tagline,
             createdAt: serverTimestamp(),
           },
           { merge: true },
@@ -334,6 +365,91 @@ export default function Signup() {
                 </button>
               </div>
             </div>
+
+            {role === "company" && (
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Company Details
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">
+                      Industry
+                    </label>
+                    <select
+                      value={industry}
+                      onChange={(e) => setIndustry(e.target.value)}
+                      className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm"
+                    >
+                      <option value="">Select...</option>
+                      <option value="Tech">Technology</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Education">Education</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">
+                      Company Size
+                    </label>
+                    <select
+                      value={companySize}
+                      onChange={(e) => setCompanySize(e.target.value)}
+                      className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm"
+                    >
+                      <option value="">Select...</option>
+                      <option value="1-10">1-10</option>
+                      <option value="11-50">11-50</option>
+                      <option value="51-200">51-200</option>
+                      <option value="201-500">201-500</option>
+                      <option value="500+">500+</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Company Website
+                  </label>
+                  <input
+                    type="url"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm"
+                    placeholder="https://company.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Headquarters
+                  </label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm"
+                    placeholder="e.g. San Francisco, CA"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">
+                    Short Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm"
+                    placeholder="e.g. Revolutionizing AI Recruting"
+                  />
+                </div>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 rounded-lg text-sm border border-red-200 bg-red-50 text-red-700">

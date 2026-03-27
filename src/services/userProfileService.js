@@ -21,3 +21,13 @@ export const getUsersByIds = async (userIds = []) => {
 
   return allUsers;
 };
+export const getAllUsers = async () => {
+  const q = query(collection(db, USERS_COLLECTION), where("role", "==", "user"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+export const getAllCompanies = async () => {
+  const snap = await getDocs(collection(db, "companies"));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+};

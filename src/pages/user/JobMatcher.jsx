@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import { getAiJobMatches } from "../../utils/storage";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import {
   createApplication,
-  getAllApplications,
   getApplicationsByUser,
 } from "../../services/applicationService";
+import { getVisiblePostingsForCandidates } from "../../services/postingService";
+import {
+  getGroqKeyAvailable,
+  rankJobsForResume,
+} from "../../services/aiMatchingService";
 import {
   Cpu,
   ChevronRight,
@@ -26,8 +29,8 @@ export default function JobMatcher() {
   const [analyzing, setAnalyzing] = useState(false);
   const [matched, setMatched] = useState([]);
   const [applications, setApplications] = useState([]);
-  const [allApplications, setAllApplications] = useState([]);
   const [error, setError] = useState("");
+  const [aiNotice, setAiNotice] = useState("");
   const [progress, setProgress] = useState(0);
   const [progressMsg, setProgressMsg] = useState("");
   const [expandedMatchId, setExpandedMatchId] = useState("");
@@ -51,11 +54,7 @@ export default function JobMatcher() {
         setResumes([]);
       }
 
-      const [allApps, userApps] = await Promise.all([
-        getAllApplications(),
-        getApplicationsByUser(auth.currentUser.uid),
-      ]);
-      setAllApplications(allApps);
+      const userApps = await getApplicationsByUser(auth.currentUser.uid);
       setApplications(userApps);
     };
 
@@ -71,28 +70,62 @@ export default function JobMatcher() {
     setMatched([]);
     setProgress(0);
 
-    const steps = [
-      { pct: 8, msg: "Initializing neural matching..." },
-      { pct: 30, msg: "Extracting semantic skill vectors..." },
-      { pct: 55, msg: "Scanning 1,400+ active listings..." },
-      { pct: 75, msg: "Calculating compatibility scores..." },
-      { pct: 100, msg: "Synthesis complete." },
-    ];
+    const run = async () => {
+      try {
+        setError("");
+        setAiNotice("");
 
-    steps.forEach(({ pct, msg }, i) => {
-      setTimeout(async () => {
-        setProgress(pct);
-        setProgressMsg(msg);
-        if (pct === 100) {
-          const results = await getAiJobMatches(
-            resume.name,
-            auth.currentUser.uid,
+        setProgress(8);
+        setProgressMsg("Fetching complete job catalog...");
+        const jobs = await getVisiblePostingsForCandidates();
+
+        setProgress(32);
+        setProgressMsg("Extracting resume keywords...");
+
+        setProgress(86);
+        setProgressMsg("Running Local NER Matcher...");
+        const ranking = await rankJobsForResume({
+          resume,
+          jobs,
+        });
+
+        const rankingById = ranking.reduce((acc, item) => {
+          acc[item.jobId] = item;
+          return acc;
+        }, {});
+
+        const rankedJobs = jobs
+          .map((job) => {
+            const scoreItem = rankingById[job.id] || null;
+            return {
+              ...job,
+              score: scoreItem?.score || 0,
+              matchedSkills: scoreItem?.matchedSkills || [],
+              missingSkills: scoreItem?.missingSkills || [],
+              summary: scoreItem?.summary || "No analysis available.",
+            };
+          })
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 12);
+
+        setMatched(rankedJobs);
+        if (!getGroqKeyAvailable()) {
+          setAiNotice(
+            "AI Matching is currently running in 'Local Platform Mode' (NER) to ensure privacy and speed without external API dependencies.",
           );
-          setMatched(results);
-          setAnalyzing(false);
         }
-      }, i * 450);
-    });
+
+        setProgress(100);
+        setProgressMsg("Synthesis complete.");
+      } catch (err) {
+        console.error("AI matching failed:", err);
+        setError(err.message || "Could not run AI matching right now.");
+      } finally {
+        setAnalyzing(false);
+      }
+    };
+
+    run();
   };
 
   const apply = async (jobId, companyId) => {
@@ -112,11 +145,7 @@ export default function JobMatcher() {
         resumeSizeBytes: resume.sizeBytes || null,
       });
 
-      const [allApps, userApps] = await Promise.all([
-        getAllApplications(),
-        getApplicationsByUser(auth.currentUser.uid),
-      ]);
-      setAllApplications(allApps);
+      const userApps = await getApplicationsByUser(auth.currentUser.uid);
       setApplications(userApps);
     } catch (err) {
       console.error("Apply failed:", err);
@@ -154,7 +183,7 @@ export default function JobMatcher() {
             opportunities based on your skills and experience.
           </p>
         </div>
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-indigo-500/10 to-transparent flex items-center justify-center opacity-50">
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-linear-to-l from-indigo-500/10 to-transparent flex items-center justify-center opacity-50">
           <Cpu size={100} className="text-indigo-500/20" />
         </div>
       </div>
@@ -163,6 +192,12 @@ export default function JobMatcher() {
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
             {error}
+          </div>
+        )}
+
+        {aiNotice && (
+          <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+            {aiNotice}
           </div>
         )}
 
@@ -231,17 +266,24 @@ export default function JobMatcher() {
 
       {!analyzing && matched.length > 0 && (
         <div className="space-y-4">
+          <div className="glass-card p-4 border border-indigo-100 bg-indigo-50/40">
+            <p className="text-xs uppercase tracking-wide text-indigo-500 font-semibold">
+              Best Match
+            </p>
+            <p className="text-lg font-semibold text-slate-900 mt-1">
+              {matched[0].title}
+            </p>
+            <p className="text-sm text-slate-600">{matched[0].company}</p>
+            <p className="text-sm text-indigo-600 font-semibold mt-2">
+              Match: {matched[0].score}%
+            </p>
+          </div>
+
           <h3 className="text-sm font-medium text-slate-500">Match Results</h3>
           <div className="grid grid-cols-1 gap-3">
-            {matched.map((job, idx) => {
-              const score = Math.max(50, 98 - idx * 3);
+            {matched.map((job) => {
+              const score = job.score || 0;
               const applied = hasApplied(job.id);
-              const totalApplicants = allApplications.filter(
-                (a) => a.jobId === job.id,
-              ).length;
-              const otherApplicants = allApplications.filter(
-                (a) => a.jobId === job.id && a.userId !== auth.currentUser.uid,
-              ).length;
 
               return (
                 <div
@@ -303,14 +345,7 @@ export default function JobMatcher() {
 
                     <div className="pl-5">
                       <div className="text-xs text-slate-400 text-right mb-2">
-                        {totalApplicants > 0 ? (
-                          <span>
-                            {otherApplicants} other applicant
-                            {otherApplicants !== 1 ? "s" : ""}
-                          </span>
-                        ) : (
-                          <span>No applicants yet</span>
-                        )}
+                        Applicant totals are private
                       </div>
                       {applied ? (
                         <div className="saas-badge badge-success gap-2 py-2 px-5">
@@ -353,8 +388,32 @@ export default function JobMatcher() {
                     </span>
                   </div>
 
+                  {!!job.summary && (
+                    <p className="mt-2 text-xs text-slate-500">{job.summary}</p>
+                  )}
+
                   {expandedMatchId === job.id && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                      <div className="md:col-span-3 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5">
+                        <p className="text-emerald-700 uppercase tracking-wide text-[11px]">
+                          Matched Keywords
+                        </p>
+                        <p className="text-emerald-800 text-sm mt-1">
+                          {job.matchedSkills?.length
+                            ? job.matchedSkills.join(", ")
+                            : "No explicit keyword overlap detected."}
+                        </p>
+                      </div>
+                      <div className="md:col-span-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                        <p className="text-amber-700 uppercase tracking-wide text-[11px]">
+                          Missing Keywords
+                        </p>
+                        <p className="text-amber-800 text-sm mt-1">
+                          {job.missingSkills?.length
+                            ? job.missingSkills.join(", ")
+                            : "No major missing keywords identified."}
+                        </p>
+                      </div>
                       <div className="md:col-span-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
                         <p className="text-slate-400 uppercase tracking-wide">
                           Description

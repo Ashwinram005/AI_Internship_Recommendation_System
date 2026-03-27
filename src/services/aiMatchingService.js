@@ -1,7 +1,7 @@
 import { convertDocToHtml, inferResumeMimeType, isDocResume } from "../utils/resumePreview";
+import OpenAI from "openai";
 
-const GEMINI_MODEL = "gemini-1.5-flash";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 const MAX_JOBS_PER_REQUEST = 20;
 const MAX_CANDIDATES_PER_REQUEST = 25;
 const MAX_TEXT_LENGTH = 6000;
@@ -71,64 +71,34 @@ const hasRequirementMatch = (resumeTokens, requirement) => {
   return ratio >= 1;
 };
 
-const keywordScore = ({ resumeText, job }) => {
-  const resumeTokens = new Set(tokenize(resumeText));
-  const jobRequirementList = getJobRequirementList(job);
-  const jobTokens = tokenize(
-    `${job?.title || ""} ${job?.description || ""} ${jobRequirementList.join(" ")}`,
-  );
-  if (!jobTokens.length) {
-    return {
-      score: 50,
-      matchedSkills: [],
-      missingSkills: jobRequirementList,
-      reason: "Fallback scoring due to limited data.",
-    };
-  }
+import { calculateLocalMatchScore } from "./localNerService";
 
-  const matchedSkills = jobRequirementList.filter((item) =>
-    hasRequirementMatch(resumeTokens, item),
-  );
-
-  const missingSkills = jobRequirementList
-    .filter((item) => !matchedSkills.includes(item))
-    .slice(0, MAX_MISSING_ITEMS);
-
-  const overlap = jobTokens.filter((token) => resumeTokens.has(token)).length;
-  const score = Math.min(95, Math.max(35, Math.round((overlap / jobTokens.length) * 100)));
-
-  return {
-    score,
-    matchedSkills,
-    missingSkills,
-    reason: "Description requirement overlap estimate (Gemini unavailable).",
-  };
+const localRankScore = ({ resumeText, job }) => {
+  return calculateLocalMatchScore(resumeText, job);
 };
 
-const callGeminiJson = async ({ apiKey, prompt, inlineData }) => {
-  const parts = [{ text: prompt }];
-  if (inlineData?.data && inlineData?.mimeType) {
-    parts.push({ inlineData });
-  }
+// ... keep original tokenize/unique helpers if needed ...
 
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.2,
-      },
-    }),
+const getGroqClient = (apiKey) =>
+  new OpenAI({
+    baseURL: "https://api.groq.com/openai/v1",
+    apiKey,
+    dangerouslyAllowBrowser: true,
   });
 
-  if (!response.ok) {
-    throw new Error(`Gemini request failed with status ${response.status}`);
-  }
+const callGroqJson = async ({ apiKey, prompt }) => {
+  const client = getGroqClient(apiKey);
+  const completion = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    temperature: 0.2,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: "You are a precise ATS matching assistant. Return JSON only." },
+      { role: "user", content: prompt },
+    ],
+  });
 
-  const payload = await response.json();
-  const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+  const text = completion?.choices?.[0]?.message?.content || "{}";
 
   try {
     return JSON.parse(text);
@@ -138,7 +108,7 @@ const callGeminiJson = async ({ apiKey, prompt, inlineData }) => {
   }
 };
 
-export const getGeminiKeyAvailable = () => Boolean(import.meta.env.VITE_GEMINI_API_KEY);
+export const getGroqKeyAvailable = () => Boolean(import.meta.env.VITE_GROQ_API_KEY);
 
 export const extractResumePlainText = async (resume) => {
   if (!resume?.base64Data) return "";
@@ -165,17 +135,17 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
   if (!safeJobs.length) return [];
 
   const resumeText = await extractResumePlainText(resume);
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
   const fallback = safeJobs
     .map((job) => {
-      const estimate = keywordScore({ resumeText, job });
+      const estimate = localRankScore({ resumeText, job });
       return {
         jobId: job.id,
         score: estimate.score,
         matchedSkills: estimate.matchedSkills,
         missingSkills: estimate.missingSkills,
-        summary: estimate.reason,
+        summary: estimate.summary,
       };
     })
     .sort((a, b) => b.score - a.score);
@@ -195,6 +165,8 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
       "4) Keep summary under 18 words.",
       "Resume text:",
       resumeText || "No OCR text available. If PDF is attached, use that file content.",
+      "Resume mime type:",
+      inferResumeMimeType(resume),
       "Jobs JSON:",
       JSON.stringify(
         safeJobs.map((job) => ({
@@ -208,11 +180,7 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
       ),
     ].join("\n");
 
-    const json = await callGeminiJson({
-      apiKey,
-      prompt,
-      inlineData: getInlineResumeDataIfPdf(resume),
-    });
+    const json = await callGroqJson({ apiKey, prompt });
 
     const results = Array.isArray(json?.results) ? json.results : [];
     if (!results.length) return fallback;
@@ -228,7 +196,7 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
       .filter((item) => item.jobId)
       .sort((a, b) => b.score - a.score);
   } catch (err) {
-    console.warn("Gemini job ranking failed, using fallback:", err);
+    console.warn("Groq job ranking failed, using fallback:", err);
     return fallback;
   }
 };
@@ -237,7 +205,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
   const limited = (candidates || []).slice(0, MAX_CANDIDATES_PER_REQUEST);
   if (!job || !limited.length) return [];
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
   const candidateWithText = await Promise.all(
     limited.map(async (candidate) => ({
@@ -249,20 +217,20 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
 
   const fallback = candidateWithText
     .map((candidate) => {
-      const estimate = keywordScore({ resumeText: candidate.resumeText, job });
+      const estimate = localRankScore({ resumeText: candidate.resumeText, job });
       return {
         applicationId: candidate.applicationId,
         score: estimate.score,
         matchedSkills: estimate.matchedSkills,
         missingSkills: estimate.missingSkills,
-        summary: estimate.reason,
+        summary: estimate.summary,
       };
     })
     .sort((a, b) => b.score - a.score);
 
   if (!apiKey) return fallback;
 
-  const runSingleCandidateGemini = async (candidate) => {
+  const runSingleCandidateGroq = async (candidate) => {
     const prompt = [
       "You are an ATS evaluator for one candidate and one job.",
       "Return strict JSON only with shape:",
@@ -281,14 +249,10 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
         resumeText: normalizeText(candidate.resumeText || "").slice(0, 3000),
         resumeName: candidate.resume?.fileName || "resume",
       }),
-      "If PDF inline file is attached, use it as the primary source.",
+      "If resume text is limited, use title, skills, and description context for a conservative score.",
     ].join("\n");
 
-    const json = await callGeminiJson({
-      apiKey,
-      prompt,
-      inlineData: candidate.inlinePdf,
-    });
+    const json = await callGroqJson({ apiKey, prompt });
 
     return {
       applicationId: json.applicationId || candidate.applicationId,
@@ -325,7 +289,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
       ),
     ].join("\n");
 
-    const json = await callGeminiJson({ apiKey, prompt });
+    const json = await callGroqJson({ apiKey, prompt });
     const results = Array.isArray(json?.results) ? json.results : [];
     if (!results.length) return fallback;
 
@@ -350,7 +314,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
 
     for (const candidate of pdfCandidatesWithoutResult) {
       try {
-        const item = await runSingleCandidateGemini(candidate);
+        const item = await runSingleCandidateGroq(candidate);
         mapped[item.applicationId] = item;
       } catch (err) {
         console.warn("Single PDF candidate scoring failed:", err);
@@ -359,7 +323,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
 
     return Object.values(mapped).sort((a, b) => b.score - a.score);
   } catch (err) {
-    console.warn("Gemini candidate ranking failed, using fallback:", err);
+    console.warn("Groq candidate ranking failed, using fallback:", err);
     return fallback;
   }
 };
