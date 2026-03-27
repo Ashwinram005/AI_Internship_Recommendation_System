@@ -52,10 +52,16 @@ export const extractLocalEntities = (text = "") => {
     if (!isNaN(val)) experience = val;
   }
 
+  // 4. Extract Dynamic Nouns (for broader matching)
+  const dynamicNouns = nlpDoc.nouns().out('array')
+    .map(n => n.toLowerCase().trim())
+    .filter(n => n.length > 3 && !TECH_SKILLS.includes(n));
+
   return {
     skills: [...new Set(skills)],
     experience,
     titles: [...new Set(titles)],
+    nouns: [...new Set(dynamicNouns)],
     rawLength: text.length
   };
 };
@@ -97,23 +103,35 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   const resumeTokens = new Set(resumeText.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 3));
   const jobTokens = job.description?.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 3) || [];
   const overlapCount = jobTokens.filter(t => resumeTokens.has(t)).length;
-  const overlapRatio = jobTokens.length > 0 ? Math.min(1, overlapCount / 20) : 0; // Cap at 20 tokens for broad match
-  const broadMatchScore = overlapRatio * 15;
+  const overlapRatio = jobTokens.length > 0 ? Math.min(1, overlapCount / 20) : 0;
+  const broadMatchScore = overlapRatio * 10;
+
+  // Detail Match (Dynamic nouns from description)
+  const matchedDetails = jobDescEntities.nouns.filter(n => 
+    resumeText.toLowerCase().includes(n)
+  );
+
+  const detailScore = jobDescEntities.nouns.length > 0
+    ? (matchedDetails.length / Math.min(10, jobDescEntities.nouns.length)) * 20
+    : 10;
 
   // Minimum Baseline Score (Ensures no discouraging 0%)
   const baseline = 15;
 
-  const totalScore = Math.min(99, Math.round(baseline + skillScore + titleScore + broadMatchScore));
+  const totalScore = Math.min(99, Math.round(baseline + skillScore + titleScore + broadMatchScore + detailScore));
 
   const missingSkills = jobEntities.skills.filter(s => !matchedSkills.includes(s));
   
-  const summaryMsg = matchedSkills.length > 0
-    ? `Local Analysis: Matched ${matchedSkills.length}/${jobEntities.skills.length} core requirements from the job description and metadata.`
-    : `Local Analysis: Review focuses on ${jobEntities.title} role requirements. No direct skill matches identified in local scan.`;
+  // Combine explicit skills with some significant detail matches for the UI
+  const displaySkills = [...new Set([...matchedSkills, ...matchedDetails.slice(0, 3)])];
+
+  const summaryMsg = displaySkills.length > 0
+    ? `Local Analysis: Matched ${displaySkills.length} key requirements discovered in the job description and metadata.`
+    : `Local Analysis: Review focuses on ${jobEntities.title} role requirements. Broad semantic match: ${Math.round(totalScore)}%.`;
 
   return {
     score: totalScore,
-    matchedSkills: matchedSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+    matchedSkills: displaySkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
     missingSkills: missingSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
     summary: summaryMsg
   };
