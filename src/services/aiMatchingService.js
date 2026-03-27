@@ -196,12 +196,16 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
         return {
           jobId: gItem.jobId,
           score: Math.max(0, Math.min(100, Number(gItem.score) || 0)),
+          confidence: Number(gItem.confidence) || 85, // AI default confidence
           matchedSkills: unique([...(fbItem.matchedSkills || []), ...(gItem.matchedSkills || [])]),
           missingSkills: unique(gItem.missingSkills || []),
           summary: gItem.summary || fbItem.summary
         };
       }
-      return fbItem;
+      return {
+        ...fbItem,
+        confidence: fbItem.confidence || 70 // Local default confidence
+      };
     }).sort((a, b) => b.score - a.score);
   } catch (err) {
     console.warn("Groq job ranking failed, using fallback:", err);

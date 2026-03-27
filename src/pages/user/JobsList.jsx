@@ -393,11 +393,18 @@ export default function JobsList() {
                             className="flex items-center gap-2"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            {aiScore ? (
-                              <span className="saas-badge badge-info">
-                                {aiScore.score}% match
-                              </span>
-                            ) : null}
+                             {aiScore ? (
+                               <div className="flex flex-col items-end gap-1">
+                                  <span className="saas-badge badge-info whitespace-nowrap">
+                                    {aiScore.score}% match
+                                  </span>
+                                  {aiScore.confidence && (
+                                     <span className="text-[10px] font-bold text-indigo-500/70 uppercase tracking-tighter">
+                                        {aiScore.confidence}% Accuracy
+                                     </span>
+                                  )}
+                               </div>
+                             ) : null}
                             <span
                               className={`saas-badge ${job.status === "active" ? "badge-success" : job.status === "hold" ? "badge-warning" : "badge-warning"}`}
                             >

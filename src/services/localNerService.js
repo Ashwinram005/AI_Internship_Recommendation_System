@@ -52,8 +52,11 @@ export const extractLocalEntities = (text = "") => {
     if (!isNaN(val)) experience = val;
   }
 
-  // 4. Extract Dynamic Nouns (for broader matching)
-  const dynamicNouns = nlpDoc.nouns().out('array')
+  // 4. Extract Dynamic Nouns & Phrases (for broader matching)
+  const nouns = nlpDoc.nouns().out('array');
+  const adjectives = nlpDoc.adjectives().out('array');
+  
+  const dynamicTerms = [...nouns, ...adjectives]
     .map(n => n.toLowerCase().trim())
     .filter(n => n.length > 3 && !TECH_SKILLS.includes(n));
 
@@ -61,8 +64,9 @@ export const extractLocalEntities = (text = "") => {
     skills: [...new Set(skills)],
     experience,
     titles: [...new Set(titles)],
-    nouns: [...new Set(dynamicNouns)],
-    rawLength: text.length
+    nouns: [...new Set(dynamicTerms)],
+    rawLength: text.length,
+    phraseCount: nlpDoc.sentences().length
   };
 };
 
@@ -86,7 +90,7 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   
   const skillScore = jobEntities.skills.length > 0 
     ? (matchedSkills.length / jobEntities.skills.length) * 60
-    : 30; // Baseline if no requirements specified
+    : 30;
 
   // Title/Keyword Match (fuzzy)
   let titleScore = 0;
@@ -125,12 +129,18 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   // Combine explicit skills with some significant detail matches for the UI
   const displaySkills = [...new Set([...matchedSkills, ...matchedDetails.slice(0, 3)])];
 
+  // Calculate NER Confidence (Accuracy metric)
+  const textQuality = Math.min(1, (resumeText.length / 1000) * 0.5 + (job.description?.length / 1000) * 0.5);
+  const matchDensity = jobEntities.skills.length > 0 ? (matchedSkills.length / jobEntities.skills.length) : 0.5;
+  const confidenceScore = Math.round((textQuality * 40) + (matchDensity * 50) + 10);
+
   const summaryMsg = displaySkills.length > 0
     ? `Local Analysis: Matched ${displaySkills.length} key requirements discovered in the job description and metadata.`
     : `Local Analysis: Review focuses on ${jobEntities.title} role requirements. Broad semantic match: ${Math.round(totalScore)}%.`;
 
   return {
     score: totalScore,
+    confidence: Math.min(100, confidenceScore),
     matchedSkills: displaySkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
     missingSkills: missingSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
     summary: summaryMsg

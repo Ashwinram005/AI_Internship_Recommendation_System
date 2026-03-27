@@ -100,6 +100,7 @@ export default function JobMatcher() {
             return {
               ...job,
               score: scoreItem?.score || 0,
+              confidence: scoreItem?.confidence || 0,
               matchedSkills: scoreItem?.matchedSkills || [],
               missingSkills: scoreItem?.missingSkills || [],
               summary: scoreItem?.summary || "No analysis available.",
@@ -320,9 +321,16 @@ export default function JobMatcher() {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900">
-                          {job.title}
-                        </p>
+                        <div className="flex items-center gap-2">
+                           <p className="text-sm font-medium text-slate-900 uppercase tracking-tight">
+                              {job.title}
+                           </p>
+                           {job.confidence && (
+                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 whitespace-nowrap">
+                                 {job.confidence}% Accuracy
+                              </span>
+                           )}
+                        </div>
                         <p className="text-xs text-slate-400 mt-0.5">
                           {job.company}
                         </p>
