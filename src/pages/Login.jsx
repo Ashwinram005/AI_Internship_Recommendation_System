@@ -84,7 +84,7 @@ export default function Login() {
             <BriefcaseBusiness size={19} />
           </div>
           <div>
-            <p className="font-bold">TalentOps</p>
+            <p className="font-bold text-xl tracking-tight">GetLanded</p>
             <p className="text-xs text-slate-300">
               Hiring & Candidate Platform
             </p>

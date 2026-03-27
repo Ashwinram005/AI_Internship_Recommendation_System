@@ -254,7 +254,7 @@ export default function Signup() {
             <BriefcaseBusiness size={19} />
           </div>
           <div>
-            <p className="font-bold text-slate-900">TalentOps</p>
+            <p className="font-bold text-slate-900">GetLanded</p>
             <p className="text-xs text-slate-500">
               Professional Hiring Workflows
             </p>

@@ -54,8 +54,8 @@ export default function Sidebar({
             <BriefcaseBusiness size={18} className="text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-base font-semibold text-slate-900 truncate">
-              TalentOps
+            <p className="text-base font-bold text-slate-900 truncate tracking-tight">
+              GetLanded
             </p>
             <p className="text-xs text-slate-500">{roleLabel}</p>
           </div>

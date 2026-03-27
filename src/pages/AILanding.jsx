@@ -62,7 +62,7 @@ export default function AILanding() {
               <BriefcaseBusiness size={17} />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">TalentOps</p>
+              <p className="text-sm font-bold text-xl text-slate-900 tracking-tight">GetLanded</p>
               <p className="text-[11px] text-slate-500">
                 Resume Intelligence Suite
               </p>
