@@ -206,7 +206,10 @@ export default function JobDetails() {
                <div className="min-w-0">
                   <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wide">
                      <span className="bg-slate-100 px-2 py-0.5 rounded">
-                        {job.type || "job"}
+                        {job.type || "internship"}
+                     </span>
+                     <span className="bg-slate-100 px-2 py-0.5 rounded">
+                        {job.experienceLevel || "Junior"}
                      </span>
                      <span>Job Board Listing</span>
                   </div>
@@ -218,8 +221,13 @@ export default function JobDetails() {
                         <Building2 size={14} /> {job.company || "Unknown Company"}
                      </span>
                      <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={14} /> Remote
+                        <MapPin size={14} /> {job.location || "Global"} ({job.workSetting || "Remote"})
                      </span>
+                     {job.salaryRange && (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+                           <WalletCards size={14} /> {job.salaryRange}
+                        </span>
+                     )}
                      <span className="inline-flex items-center gap-1.5">
                         <CalendarDays size={14} /> Apply by {deadlineLabel}
                      </span>
@@ -302,11 +310,26 @@ export default function JobDetails() {
                   </div>
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                      <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Company Website
+                        Experience Level
                      </p>
-                     <p className="text-slate-700 font-medium mt-1 inline-flex items-center gap-1.5">
-                        <Globe size={13} />
-                        Not available
+                     <p className="text-slate-700 font-medium mt-1 capitalize">
+                        {job.experienceLevel || "Junior"}
+                     </p>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                     <p className="text-slate-400 text-xs uppercase tracking-wide">
+                        Industry / Category
+                     </p>
+                     <p className="text-slate-700 font-medium mt-1">
+                        {job.industry || "General / Tech"}
+                     </p>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                     <p className="text-slate-400 text-xs uppercase tracking-wide">
+                        Work Setting
+                     </p>
+                     <p className="text-slate-700 font-medium mt-1 capitalize">
+                        {job.workSetting || "Remote"}
                      </p>
                   </div>
                </div>

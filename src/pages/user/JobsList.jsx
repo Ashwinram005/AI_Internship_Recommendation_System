@@ -382,10 +382,10 @@ export default function JobsList() {
                               </div>
                               <div className="flex items-center gap-1.5 text-sm text-slate-500">
                                 <MapPin size={14} />
-                                Remote
+                                {job.location || "Location Not Specified"} ({job.workSetting || "Remote"})
                               </div>
                               <span className="text-xs uppercase tracking-wide text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                                {normalizeType(job.type)}
+                                {job.experienceLevel || "Junior"}
                               </span>
                             </div>
                           </div>
@@ -430,6 +430,13 @@ export default function JobsList() {
                               </span>
                             ))}
                         </div>
+
+                        {job.salaryRange && (
+                           <p className="text-xs font-medium text-emerald-700 mt-3 flex items-center gap-1.5">
+                              <WalletCards size={12} />
+                              Pay: {job.salaryRange}
+                           </p>
+                        )}
 
                         <p className="text-sm text-slate-600 mt-4 line-clamp-2 leading-relaxed">
                           {job.description || "No description provided."}

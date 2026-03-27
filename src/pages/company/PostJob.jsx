@@ -9,9 +9,14 @@ export default function PostJob() {
    const { user } = useAuth();
    const navigate = useNavigate();
    const [job, setJob] = useState({
-      type: "job",
+      type: "internship",
       title: "",
       company: user?.name || "",
+      location: "",
+      workSetting: "remote", // remote, onsite, hybrid
+      experienceLevel: "junior", // junior, mid, senior, lead
+      salaryRange: "",
+      industry: "",
       skills: "",
       description: "",
       deadline: "",
@@ -111,6 +116,77 @@ export default function PostJob() {
                         className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900 placeholder-slate-300"
                         value={job.deadline}
                         onChange={(e) => setJob({ ...job, deadline: e.target.value })}
+                     />
+                  </div>
+
+                  <div className="space-y-2">
+                     <label className="text-sm font-medium text-slate-600">
+                        Work Setting
+                     </label>
+                     <select
+                        value={job.workSetting}
+                        onChange={(e) => setJob({ ...job, workSetting: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900"
+                     >
+                        <option value="remote">Remote</option>
+                        <option value="onsite">On-site</option>
+                        <option value="hybrid">Hybrid</option>
+                     </select>
+                  </div>
+
+                  <div className="space-y-2">
+                     <label className="text-sm font-medium text-slate-600">
+                        Location / HQ
+                     </label>
+                     <input
+                        type="text"
+                        required
+                        placeholder="e.g. San Francisco, CA"
+                        className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900 placeholder-slate-300"
+                        value={job.location}
+                        onChange={(e) => setJob({ ...job, location: e.target.value })}
+                     />
+                  </div>
+
+                  <div className="space-y-2">
+                     <label className="text-sm font-medium text-slate-600">
+                        Experience Level
+                     </label>
+                     <select
+                        value={job.experienceLevel}
+                        onChange={(e) => setJob({ ...job, experienceLevel: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900"
+                     >
+                        <option value="junior">Junior / Entry Level</option>
+                        <option value="mid">Mid-Level</option>
+                        <option value="senior">Senior</option>
+                        <option value="lead">Lead / Management</option>
+                     </select>
+                  </div>
+
+                  <div className="space-y-2">
+                     <label className="text-sm font-medium text-slate-600">
+                        Salary / Stipend Range
+                     </label>
+                     <input
+                        type="text"
+                        placeholder="e.g. $50k - $80k or $500/mo"
+                        className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900 placeholder-slate-300"
+                        value={job.salaryRange}
+                        onChange={(e) => setJob({ ...job, salaryRange: e.target.value })}
+                     />
+                  </div>
+
+                  <div className="space-y-2">
+                     <label className="text-sm font-medium text-slate-600">
+                        Industry / Category
+                     </label>
+                     <input
+                        type="text"
+                        placeholder="e.g. Technology, Finance, Design"
+                        className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900 placeholder-slate-300"
+                        value={job.industry}
+                        onChange={(e) => setJob({ ...job, industry: e.target.value })}
                      />
                   </div>
                </div>
