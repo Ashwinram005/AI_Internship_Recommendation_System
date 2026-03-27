@@ -181,20 +181,28 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
     ].join("\n");
 
     const json = await callGroqJson({ apiKey, prompt });
-
     const results = Array.isArray(json?.results) ? json.results : [];
-    if (!results.length) return fallback;
+    
+    // Create a map for easy lookup
+    const groqMap = results.reduce((acc, item) => {
+      if (item.jobId) acc[item.jobId] = item;
+      return acc;
+    }, {});
 
-    return results
-      .map((item) => ({
-        jobId: item.jobId,
-        score: Math.max(0, Math.min(100, Number(item.score) || 0)),
-        matchedSkills: unique(item.matchedSkills || []),
-        missingSkills: unique(item.missingSkills || []),
-        summary: item.summary || "AI fit estimate",
-      }))
-      .filter((item) => item.jobId)
-      .sort((a, b) => b.score - a.score);
+    // Merge Groq results with fallback
+    return fallback.map((fbItem) => {
+      const gItem = groqMap[fbItem.jobId];
+      if (gItem) {
+        return {
+          jobId: gItem.jobId,
+          score: Math.max(0, Math.min(100, Number(gItem.score) || 0)),
+          matchedSkills: unique([...(fbItem.matchedSkills || []), ...(gItem.matchedSkills || [])]),
+          missingSkills: unique(gItem.missingSkills || []),
+          summary: gItem.summary || fbItem.summary
+        };
+      }
+      return fbItem;
+    }).sort((a, b) => b.score - a.score);
   } catch (err) {
     console.warn("Groq job ranking failed, using fallback:", err);
     return fallback;

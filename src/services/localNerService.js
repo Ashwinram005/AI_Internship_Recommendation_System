@@ -73,11 +73,6 @@ export const calculateLocalMatchScore = (resumeText, job) => {
     title: (job.title || "").toLowerCase()
   };
 
-  // Skill Match (weighted heaviest)
-  const matchedSkills = jobEntities.skills.filter(s => 
-    resumeEntities.skills.includes(s) || resumeText.toLowerCase().includes(s)
-  );
-  
   // Skill Match (weighted heavily)
   const matchedSkills = jobEntities.skills.filter(s => 
     resumeEntities.skills.includes(s) || resumeText.toLowerCase().includes(s)
@@ -105,17 +100,21 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   const overlapRatio = jobTokens.length > 0 ? Math.min(1, overlapCount / 20) : 0; // Cap at 20 tokens for broad match
   const broadMatchScore = overlapRatio * 15;
 
-  // Minimum Baseline Score (If there's ANY overlap or just a valid resume)
-  const baseline = resumeText.length > 100 ? 15 : 0;
+  // Minimum Baseline Score (Ensures no discouraging 0%)
+  const baseline = 15;
 
   const totalScore = Math.min(99, Math.round(baseline + skillScore + titleScore + broadMatchScore));
 
   const missingSkills = jobEntities.skills.filter(s => !matchedSkills.includes(s));
+  
+  const summaryMsg = matchedSkills.length > 0
+    ? `Local Analysis: Matched ${matchedSkills.length}/${jobEntities.skills.length} core requirements from the job description and metadata.`
+    : `Local Analysis: Review focuses on ${jobEntities.title} role requirements. No direct skill matches identified in local scan.`;
 
   return {
     score: totalScore,
     matchedSkills: matchedSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
     missingSkills: missingSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-    summary: `Local Analysis: Matched ${matchedSkills.length}/${jobEntities.skills.length} core requirements identified from the job description and metadata.`
+    summary: summaryMsg
   };
 };
