@@ -33,15 +33,17 @@ export const extractLocalEntities = (text = "") => {
   const normalized = text.toLowerCase();
   const nlpDoc = nlp(normalized);
 
-  // 1. Extract Skills (simple dictionary matching for now)
-  const skills = TECH_SKILLS.filter(skill => 
-    normalized.includes(skill.toLowerCase())
-  );
+  // 1. Extract Skills (dictionary matching with word boundaries)
+  const skills = TECH_SKILLS.filter(skill => {
+    const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    return regex.test(normalized);
+  });
 
   // 2. Extract Titles
-  const titles = JOB_TITLES.filter(title => 
-    normalized.includes(title.toLowerCase())
-  );
+  const titles = JOB_TITLES.filter(title => {
+    const regex = new RegExp(`\\b${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    return regex.test(normalized);
+  });
 
   // 3. Extract Years of Experience
   // Look for patterns like "5 years", "3+ yrs", "8 years of experience"
@@ -83,10 +85,13 @@ export const calculateLocalMatchScore = (resumeText, job) => {
     title: (job.title || "").toLowerCase()
   };
 
+  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   // Skill Match (weighted heavily)
-  const matchedSkills = jobEntities.skills.filter(s => 
-    resumeEntities.skills.includes(s) || resumeText.toLowerCase().includes(s)
-  );
+  const matchedSkills = jobEntities.skills.filter(s => {
+    const regex = new RegExp(`\\b${escapeRegExp(s)}\\b`, 'i');
+    return resumeEntities.skills.includes(s) || regex.test(resumeText);
+  });
   
   const skillScore = jobEntities.skills.length > 0 
     ? (matchedSkills.length / jobEntities.skills.length) * 60
@@ -95,11 +100,15 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   // Title/Keyword Match (fuzzy)
   let titleScore = 0;
   const normalizedTitle = jobEntities.title.replace(/[^a-z0-9]/g, " ");
-  if (resumeText.toLowerCase().includes(normalizedTitle)) {
+  const titleRegex = new RegExp(`\\b${escapeRegExp(normalizedTitle)}\\b`, 'i');
+  if (titleRegex.test(resumeText)) {
     titleScore = 25;
   } else {
     const titleWords = normalizedTitle.split(" ").filter(w => w.length > 3);
-    const wordMatches = titleWords.filter(w => resumeText.toLowerCase().includes(w));
+    const wordMatches = titleWords.filter(w => {
+       const wRegex = new RegExp(`\\b${escapeRegExp(w)}\\b`, 'i');
+       return wRegex.test(resumeText);
+    });
     titleScore = titleWords.length > 0 ? (wordMatches.length / titleWords.length) * 20 : 0;
   }
 
@@ -111,9 +120,10 @@ export const calculateLocalMatchScore = (resumeText, job) => {
   const broadMatchScore = overlapRatio * 10;
 
   // Detail Match (Dynamic nouns from description)
-  const matchedDetails = jobDescEntities.nouns.filter(n => 
-    resumeText.toLowerCase().includes(n)
-  );
+  const matchedDetails = jobDescEntities.nouns.filter(n => {
+    const nRegex = new RegExp(`\\b${escapeRegExp(n)}\\b`, 'i');
+    return nRegex.test(resumeText);
+  });
 
   const detailScore = jobDescEntities.nouns.length > 0
     ? (matchedDetails.length / Math.min(10, jobDescEntities.nouns.length)) * 20
