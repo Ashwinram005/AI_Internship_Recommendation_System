@@ -54,8 +54,8 @@ export default function AILanding() {
   };
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-[var(--color-bg)]">
+      <header className="bg-[var(--color-surface)]/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_4px_32px_rgba(19,27,46,0.04)]">
         <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center">
@@ -81,12 +81,12 @@ export default function AILanding() {
 
       <main className="max-w-7xl mx-auto px-5 lg:px-8 py-12 lg:py-16 space-y-14">
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 text-xs font-semibold text-slate-600 bg-white">
-              <BadgeCheck size={13} /> Trusted by Career Teams
+          <div className="lg:col-span-7 space-y-8">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-[var(--color-primary)] bg-[var(--color-surface)] shadow-[0_2px_12px_rgba(19,27,46,0.06)]">
+              <BadgeCheck size={14} /> Trusted by Career Teams
             </span>
-            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
-              Resume screening that feels operational, not experimental.
+            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tighter text-[var(--text-main)] leading-tight">
+              Resume screening that feels <span className="gradient-text">operational</span>, not experimental.
             </h1>
             <p className="text-slate-600 text-base max-w-2xl">
               Upload a resume and get a structured assessment with scoring, ATS
@@ -125,9 +125,9 @@ export default function AILanding() {
 
             <button
               onClick={() => inputRef.current?.click()}
-              className="w-full border border-dashed border-slate-300 rounded-xl bg-slate-50 p-8 text-center hover:bg-slate-100 transition"
+              className="w-full rounded-2xl bg-[var(--color-surface-alt)] p-8 text-center hover:shadow-[0_4px_16px_rgba(19,27,46,0.04)] transition-all"
             >
-              <div className="mx-auto w-12 h-12 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center">
+              <div className="mx-auto w-12 h-12 rounded-xl bg-white shadow-sm text-[var(--text-main)] flex items-center justify-center">
                 <Upload size={20} />
               </div>
               <p className="text-sm font-semibold text-slate-800 mt-3">

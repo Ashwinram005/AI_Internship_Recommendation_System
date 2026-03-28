@@ -172,7 +172,7 @@ export default function JobsList() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <section className="glass-card p-6 md:p-7 bg-gradient-to-r from-[#f6fbfb] via-white to-[#fff9f3]">
+      <section className="glass-card p-6 md:p-8 bg-[var(--color-surface)]">
         <div className="flex flex-col xl:flex-row gap-6 xl:items-center xl:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-slate-500 font-semibold">
@@ -196,11 +196,11 @@ export default function JobsList() {
                 {jobs.length}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">
+            <div className="rounded-xl bg-[var(--color-surface-alt)] p-4 shadow-sm">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500">
                 Jobs
               </p>
-              <p className="text-xl font-bold text-[#0b525b] mt-1">
+              <p className="text-xl font-bold text-[var(--color-primary)] mt-1">
                 {totalJobs}
               </p>
             </div>
@@ -259,9 +259,9 @@ export default function JobsList() {
                 <button
                   key={value}
                   onClick={() => setTypeFilter(value)}
-                  className={`px-3 py-1.5 rounded-md text-xs border ${typeFilter === value
-                      ? "bg-[#0b525b] border-[#0b525b] text-white"
-                      : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                  className={`px-3 py-1.5 rounded-md text-xs border-transparent transition-all ${typeFilter === value
+                      ? "bg-[var(--color-primary)] text-white shadow-sm"
+                      : "bg-[var(--color-bg)] text-slate-600 hover:bg-[var(--color-surface-alt)]"
                     }`}
                 >
                   {value === "all"
@@ -322,9 +322,9 @@ export default function JobsList() {
       )}
 
       {(aiLoading || aiNotice || resumeUsedName) && (
-        <div className="glass-card p-4 space-y-1 bg-gradient-to-r from-white via-[#f4fbfb] to-[#fff9f2]">
+        <div className="glass-card p-5 space-y-1 bg-[var(--color-surface-alt)]">
           <p className="text-sm font-semibold text-slate-900 inline-flex items-center gap-2">
-            <Trophy size={15} className="text-[#0b525b]" />
+            <Trophy size={15} className="text-[var(--color-primary)]" />
             AI Job Matching
           </p>
           {resumeUsedName && (
@@ -365,7 +365,7 @@ export default function JobsList() {
                   const aiScore = jobScoresById[job.id];
                   return (
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-[#0b525b] to-[#167a86] text-white rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-hover)] text-white rounded-xl shadow-sm flex items-center justify-center">
                         <WalletCards size={20} />
                       </div>
 
@@ -430,7 +430,7 @@ export default function JobsList() {
                             .map((s, i) => (
                               <span
                                 key={i}
-                                className="text-xs text-[#0b525b] bg-[#e5f4f6] px-2.5 py-1 rounded-md flex items-center gap-1.5"
+                                className="text-xs text-[var(--color-primary-hover)] bg-[var(--color-primary-soft)] px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium"
                               >
                                 <Sparkles size={10} />
                                 {s.trim()}
@@ -480,7 +480,7 @@ export default function JobsList() {
                               e.stopPropagation();
                               navigate(`/user/jobs/${job.id}`);
                             }}
-                            className="text-[#0b525b] font-semibold inline-flex items-center gap-1"
+                            className="text-[var(--color-primary)] font-semibold inline-flex items-center gap-1 hover:text-[var(--color-primary-hover)]"
                           >
                             View job
                             <ArrowUpRight size={12} />

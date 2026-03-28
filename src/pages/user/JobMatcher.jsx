@@ -172,11 +172,11 @@ export default function JobMatcher() {
     <div className="max-w-4xl space-y-8">
       <div className="glass-card p-8 relative overflow-hidden">
         <div className="relative z-10 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs text-indigo-500 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-primary-soft)] text-xs text-[var(--color-primary-hover)] mb-4 font-bold">
             <Sparkles size={12} />
             AI-Powered Matching
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900 font-[Poppins] mb-3">
+          <h1 className="text-3xl font-extrabold tracking-tighter text-[var(--text-main)] mb-3">
             Job Matcher
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed">
@@ -184,8 +184,8 @@ export default function JobMatcher() {
             opportunities based on your skills and experience.
           </p>
         </div>
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-linear-to-l from-indigo-500/10 to-transparent flex items-center justify-center opacity-50">
-          <Cpu size={100} className="text-indigo-500/20" />
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-linear-to-l from-[var(--color-primary-soft)] to-transparent flex items-center justify-center opacity-50">
+          <Cpu size={100} className="text-[var(--color-primary)]/20" />
         </div>
       </div>
 
@@ -249,13 +249,13 @@ export default function JobMatcher() {
               <div className="space-y-3 pt-4 border-t border-slate-100">
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-slate-600">{progressMsg}</p>
-                  <span className="text-lg font-semibold text-indigo-500">
+                  <span className="text-lg font-bold text-[var(--color-primary)]">
                     {progress}%
                   </span>
                 </div>
                 <div className="progress-bar-container">
                   <div
-                    className="progress-bar-fill bg-indigo-500"
+                    className="progress-bar-fill bg-[var(--color-primary)]"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -267,15 +267,15 @@ export default function JobMatcher() {
 
       {!analyzing && matched.length > 0 && (
         <div className="space-y-4">
-          <div className="glass-card p-4 border border-indigo-100 bg-indigo-50/40">
-            <p className="text-xs uppercase tracking-wide text-indigo-500 font-semibold">
+          <div className="glass-card p-5 bg-[var(--color-primary-soft)] border-transparent shadow-[0_2px_12px_rgba(0,62,199,0.08)]">
+            <p className="text-xs uppercase tracking-wide text-[var(--color-primary)] font-bold">
               Best Match
             </p>
-            <p className="text-lg font-semibold text-slate-900 mt-1">
+            <p className="text-xl font-extrabold text-[var(--text-main)] mt-1 tracking-tight">
               {matched[0].title}
             </p>
-            <p className="text-sm text-slate-600">{matched[0].company}</p>
-            <p className="text-sm text-indigo-600 font-semibold mt-2">
+            <p className="text-sm text-[var(--text-secondary)]">{matched[0].company}</p>
+            <p className="text-sm text-[var(--color-primary-hover)] font-bold mt-2">
               Match: {matched[0].score}%
             </p>
           </div>
@@ -308,7 +308,7 @@ export default function JobMatcher() {
                             cy="28"
                             r="24"
                             fill="transparent"
-                            stroke="#6366F1"
+                            stroke="var(--color-primary)"
                             strokeWidth="4"
                             strokeDasharray={`${2 * Math.PI * 24}`}
                             strokeDashoffset={`${2 * Math.PI * 24 * (1 - score / 100)}`}
@@ -326,7 +326,7 @@ export default function JobMatcher() {
                               {job.title}
                            </p>
                            {job.confidence && (
-                              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 whitespace-nowrap">
+                              <span className="text-[10px] font-bold text-[var(--color-primary-hover)] bg-[var(--color-primary-soft)] px-1.5 py-0.5 rounded border-transparent whitespace-nowrap">
                                  {job.confidence}% Accuracy
                               </span>
                            )}
@@ -402,49 +402,49 @@ export default function JobMatcher() {
 
                   {expandedMatchId === job.id && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                      <div className="md:col-span-3 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5">
-                        <p className="text-emerald-700 uppercase tracking-wide text-[11px]">
+                      <div className="md:col-span-3 bg-[var(--color-success-soft)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-[var(--color-success)] uppercase tracking-wide text-[11px] font-bold">
                           Matched Keywords
                         </p>
-                        <p className="text-emerald-800 text-sm mt-1">
+                        <p className="text-emerald-900 text-sm mt-1">
                           {job.matchedSkills?.length
                             ? job.matchedSkills.join(", ")
                             : "No explicit keyword overlap detected."}
                         </p>
                       </div>
-                      <div className="md:col-span-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-                        <p className="text-amber-700 uppercase tracking-wide text-[11px]">
+                      <div className="md:col-span-3 bg-[var(--color-warning-soft)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-[var(--color-warning)] uppercase tracking-wide text-[11px] font-bold">
                           Missing Keywords
                         </p>
-                        <p className="text-amber-800 text-sm mt-1">
+                        <p className="text-amber-900 text-sm mt-1">
                           {job.missingSkills?.length
                             ? job.missingSkills.join(", ")
                             : "No major missing keywords identified."}
                         </p>
                       </div>
-                      <div className="md:col-span-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
-                        <p className="text-slate-400 uppercase tracking-wide">
+                      <div className="md:col-span-3 bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-slate-500 uppercase tracking-wide font-semibold">
                           Description
                         </p>
-                        <p className="text-slate-700 text-sm mt-1 whitespace-pre-line leading-relaxed">
+                        <p className="text-[var(--text-main)] text-sm mt-1 whitespace-pre-line leading-relaxed">
                           {job.description || "No description provided."}
                         </p>
                       </div>
-                      <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <p className="text-slate-400">Type</p>
-                        <p className="text-slate-700 font-medium mt-0.5 uppercase">
+                      <div className="bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-slate-500 font-semibold">Type</p>
+                        <p className="text-[var(--text-main)] font-bold mt-0.5 uppercase">
                           {job.type || "job"}
                         </p>
                       </div>
-                      <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <p className="text-slate-400">Company</p>
-                        <p className="text-slate-700 font-medium mt-0.5">
+                      <div className="bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-slate-500 font-semibold">Company</p>
+                        <p className="text-[var(--text-main)] font-bold mt-0.5">
                           {job.company || "Unknown Company"}
                         </p>
                       </div>
-                      <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <p className="text-slate-400">Deadline</p>
-                        <p className="text-slate-700 font-medium mt-0.5">
+                      <div className="bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">
+                        <p className="text-slate-500 font-semibold">Deadline</p>
+                        <p className="text-[var(--text-main)] font-bold mt-0.5">
                           {formatDeadline(job.deadline)}
                         </p>
                       </div>

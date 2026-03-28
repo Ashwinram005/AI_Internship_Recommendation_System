@@ -206,11 +206,10 @@ export default function PostJob() {
                <div className="space-y-5">
                   <div className="space-y-2">
                      <label className="text-sm font-medium text-slate-600">
-                        Required Skills
+                        Skills (Optional)
                      </label>
                      <input
                         type="text"
-                        required
                         placeholder="React, Node.js, Python (comma separated)"
                         className="w-full px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-sm text-slate-900 placeholder-slate-300"
                         value={job.skills}

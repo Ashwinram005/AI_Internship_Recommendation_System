@@ -1,27 +1,28 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --color-primary: #0b525b;
-  --color-primary-hover: #073d45;
-  --color-primary-soft: #e5f4f6;
-  --color-accent: #1f2937;
-  --color-success: #136a43;
+  --color-primary: #003ec7;
+  --color-primary-hover: #0052ff;
+  --color-primary-soft: #dde1ff;
+  --color-accent: #131b2e;
+  --color-success: #157347;
   --color-success-soft: #e8f8ef;
-  --color-warning: #9b5f00;
+  --color-warning: #9a6700;
   --color-warning-soft: #fff5e3;
-  --color-danger: #b42318;
-  --color-danger-soft: #fdeeed;
-  --color-bg: #f4f6f8;
+  --color-danger: #ba1a1a;
+  --color-danger-soft: #ffdad6;
+  --color-bg: #faf8ff;
   --color-surface: #ffffff;
-  --color-surface-alt: #f9fbfc;
-  --text-main: #101828;
-  --text-secondary: #344054;
-  --text-muted: #667085;
-  --color-border: #d0d7de;
-  --color-border-subtle: #e9edf1;
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 14px 28px -24px rgba(16, 24, 40, 0.4);
-  --shadow-md: 0 24px 40px -26px rgba(16, 24, 40, 0.45);
+  --color-surface-alt: #f2f3ff;
+  --text-main: #131b2e;
+  --text-secondary: #434656;
+  --text-muted: #737688;
+  --color-border: transparent; /* No-line rule */
+  --color-border-subtle: transparent; /* No-line rule */
+  --color-outline: #c3c5d9; /* fallback for ghost borders */
+  --shadow-card: 0 8px 32px rgba(19, 27, 46, 0.06);
+  --shadow-md: 0 16px 48px -12px rgba(19, 27, 46, 0.1);
 }
 
 @layer base {
@@ -34,12 +35,12 @@
 
   body {
     margin: 0;
-    font-family: "Instrument Sans", "Segoe UI", sans-serif;
-    background: radial-gradient(circle at 10% -10%, #ecf6f8 0%, #f4f6f8 44%, #eef1f4 100%);
+    font-family: "Inter", "Segoe UI", sans-serif;
+    background: var(--color-bg);
     color: var(--text-main);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    line-height: 1.55;
+    line-height: 1.6;
   }
 
   h1,
@@ -48,14 +49,14 @@
   h4,
   h5,
   h6 {
-    font-family: "Sora", "Instrument Sans", sans-serif;
+    font-family: "Inter", sans-serif;
     letter-spacing: -0.02em;
     color: var(--text-main);
   }
 
   ::selection {
-    background: #c7eaee;
-    color: #07363d;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-hover);
   }
 
   ::-webkit-scrollbar {
@@ -87,8 +88,8 @@
     position: sticky;
     top: 0;
     flex-shrink: 0;
-    border-right: 1px solid var(--color-border-subtle);
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbfc 55%, #f3f8f8 100%);
+    border-right: none;
+    background: var(--color-surface);
     display: flex;
     flex-direction: column;
     padding: 20px 16px;
@@ -97,14 +98,13 @@
 
   .glass-card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    border: none;
+    border-radius: 12px;
     box-shadow: var(--shadow-card);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .glass-card:hover {
-    border-color: #c2ccd6;
     box-shadow: var(--shadow-md);
   }
 
@@ -113,9 +113,9 @@
     top: 0;
     z-index: 40;
     height: 72px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-border-subtle);
+    background: rgba(250, 248, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: none;
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -131,21 +131,19 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     text-decoration: none;
-    border: 1px solid transparent;
+    border: none;
   }
 
   .nav-link:hover {
     color: var(--text-main);
-    background: #edf3f4;
-    border-color: #dde8ea;
+    background: var(--color-surface-alt);
   }
 
   .nav-link.active {
     color: var(--color-primary);
     background: var(--color-primary-soft);
-    border-color: #bfe2e7;
   }
 
   .saas-btn {
@@ -169,26 +167,26 @@
   }
 
   .saas-btn-primary {
-    background: var(--color-primary);
+    background: linear-gradient(45deg, var(--color-primary), var(--color-primary-hover));
     color: #fff;
-    border-color: #073c43;
+    border: none;
   }
 
   .saas-btn-primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: #052f35;
+    box-shadow: 0 4px 12px rgba(0, 62, 199, 0.3);
+    transform: translateY(-1px);
   }
 
   .saas-btn-secondary {
-    background: #fff;
-    border-color: var(--color-border);
-    color: var(--text-secondary);
+    background: var(--color-surface);
+    border: none;
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(19, 27, 46, 0.04);
   }
 
   .saas-btn-secondary:hover:not(:disabled) {
-    background: #f6f8fa;
+    background: var(--color-surface-alt);
     color: var(--text-main);
-    border-color: #c5d0da;
   }
 
   .saas-badge {
@@ -222,10 +220,11 @@
   }
 
   .saas-table-container {
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: 16px;
     overflow: hidden;
     background: var(--color-surface);
+    box-shadow: var(--shadow-card);
   }
 
   .saas-table {
@@ -235,21 +234,21 @@
   }
 
   .saas-table th {
-    background: #f8fafb;
-    padding: 12px 16px;
-    font-size: 10px;
-    font-weight: 800;
+    background: var(--color-surface-alt);
+    padding: 16px 20px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     color: var(--text-muted);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: none;
   }
 
   .saas-table td {
-    padding: 15px 16px;
-    font-size: 13px;
+    padding: 16px 20px;
+    font-size: 14px;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--color-surface-alt);
     vertical-align: middle;
   }
 
@@ -258,7 +257,7 @@
   }
 
   .saas-table tr:hover td {
-    background: #f9fbfc;
+    background: var(--color-bg);
   }
 
   .score-badge {
@@ -299,7 +298,7 @@
   }
 
   .gradient-text {
-    background: linear-gradient(90deg, #0b525b 0%, #1d6f78 55%, #2f8f99 100%);
+    background: linear-gradient(45deg, var(--color-primary), var(--color-primary-hover));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

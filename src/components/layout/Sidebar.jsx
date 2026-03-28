@@ -50,7 +50,7 @@ export default function Sidebar({
       {/* Brand */}
       <div className="px-2 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0b525b] flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(0,62,199,0.2)]">
             <BriefcaseBusiness size={18} className="text-white" />
           </div>
           <div className="min-w-0">
@@ -93,8 +93,8 @@ export default function Sidebar({
             onClick={onVoiceClick}
             disabled={isListening}
             className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-xl font-medium transition-all text-sm ${isListening
-                ? "bg-red-50 text-red-500 border border-red-200"
-                : "bg-[#0b525b] text-white border border-[#0b525b] hover:bg-[#073d45]"
+                ? "bg-[var(--color-danger-soft)] text-[var(--color-danger)] border-transparent"
+                : "saas-btn-primary"
               }`}
           >
             <Mic size={18} />

@@ -3,10 +3,13 @@
 The recommendation engine uses a hybrid approach to match resumes against job descriptions, combining state-of-the-art AI (Groq/Llama 3.3) with a robust keyword-based fallback system.
 
 ## 1. Data Extraction & Preprocessing
-Before matching occurs, the system extracts text from the uploaded resume:
-- **PDFs**: Extracted using OCR or direct text extraction.
-- **DOC/DOCX**: Converted to HTML and then stripped of tags to get clean plain text.
-- **Normalization**: All text (resume and job descriptions) is normalized to remove extra whitespace and special characters.
+Before matching occurs, the system uses the following summary of tools for document handling and text extraction from the resumes:
+- **PDF Parsing (input)**: MuPDF — reads uploaded PDF resumes
+- **DOCX Parsing (input)**: Mammoth — reads uploaded Word documents
+- **PDF Generation (output)**: Playwright (headless Chromium) — renders HTML templates to PDF
+- **PDF Generation (alt)**: jsPDF — listed as dependency, likely fallback/alternative
+
+**Normalization**: All extracted text is normalized to remove extra whitespace and special characters before being passed to the AI engine.
 
 ## 2. Core Matching Logic
 
