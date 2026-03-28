@@ -1,3 +1,7 @@
+import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
 const DOC_MIME_TYPES = new Set([
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -86,12 +90,11 @@ export const convertPdfToText = async (resume) => {
   if (!resume?.base64Data) return "";
 
   try {
-    const pdfjsLib = await import("pdfjs-dist/build/pdf");
-    // Use dynamic CDN for worker to avoid build-time issues
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-
     const arrayBuffer = dataUrlToArrayBuffer(resume.base64Data);
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const loadingTask = pdfjsLib.getDocument({ 
+      data: arrayBuffer,
+      standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`,
+    });
     const pdf = await loadingTask.promise;
 
     let fullText = "";
