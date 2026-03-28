@@ -9,6 +9,7 @@ import {
    Globe,
    MapPin,
    Sparkles,
+   WalletCards,
    X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
