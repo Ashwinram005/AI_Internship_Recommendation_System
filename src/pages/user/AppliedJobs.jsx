@@ -9,11 +9,8 @@ import {
 } from "../../services/applicationService";
 import { getVisiblePostingsForCandidates } from "../../services/postingService";
 import {
-  ArrowRight,
   ArrowUpRight,
   Briefcase,
-  CheckCircle2,
-  CircleDot,
   Clock3,
   Filter,
   Layers3,
@@ -99,10 +96,7 @@ export default function AppliedJobs() {
     return "badge-info";
   };
 
-  const getStageIndex = (status) => {
-    const idx = STATUS_FLOW.indexOf(status);
-    return idx === -1 ? 0 : idx;
-  };
+
 
   const formatAppliedDate = (seconds) => {
     if (!seconds) return "-";
@@ -305,7 +299,6 @@ export default function AppliedJobs() {
         ) : (
           visibleApplications.map((app) => {
             const job = jobs.find((j) => j.id === app.jobId);
-            const stageIndex = getStageIndex(app.status);
             const isExpanded = expandedId === app.id;
 
             return (
@@ -370,46 +363,7 @@ export default function AppliedJobs() {
                       </div>
                     </div>
 
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs uppercase tracking-wide text-slate-400">
-                          Pipeline Progress
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Step {Math.min(stageIndex + 1, 6)} of 6 core stages
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                        {STATUS_FLOW.slice(0, 6).map((status, idx) => {
-                          const complete = idx <= stageIndex;
-                          return (
-                            <div
-                              key={`${app.id}-${status}`}
-                              className="flex items-center shrink-0"
-                            >
-                              <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center border text-[11px] font-semibold ${complete
-                                    ? "bg-[#0b525b] text-white border-[#0b525b]"
-                                    : "bg-white text-slate-400 border-slate-200"
-                                  }`}
-                              >
-                                {complete ? (
-                                  <CheckCircle2 size={13} />
-                                ) : (
-                                  <CircleDot size={13} />
-                                )}
-                              </div>
-                              {idx < 5 ? (
-                                <ArrowRight
-                                  size={13}
-                                  className={`mx-1.5 ${complete ? "text-[#0b525b]" : "text-slate-300"}`}
-                                />
-                              ) : null}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+
                   </div>
 
                   <div className="w-full xl:w-auto xl:min-w-[220px] flex xl:flex-col gap-2">
