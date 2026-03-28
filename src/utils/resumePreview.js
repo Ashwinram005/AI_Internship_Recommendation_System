@@ -56,7 +56,7 @@ export const openResumeInNewTab = async (resume) => {
   setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
 };
 
-const dataUrlToArrayBuffer = (dataUrl) => {
+export const dataUrlToArrayBuffer = (dataUrl) => {
   const base64Part = dataUrl.split(",")[1] || "";
   const binary = window.atob(base64Part);
   const bytes = new Uint8Array(binary.length);
@@ -71,8 +71,39 @@ export const convertDocToHtml = async (resume) => {
     throw new Error("Resume file is unavailable.");
   }
 
-  const mammoth = await import("mammoth/mammoth.browser");
-  const arrayBuffer = dataUrlToArrayBuffer(resume.base64Data);
-  const result = await mammoth.convertToHtml({ arrayBuffer });
-  return result.value || "";
+  try {
+    const mammoth = await import("mammoth/mammoth.browser");
+    const arrayBuffer = dataUrlToArrayBuffer(resume.base64Data);
+    const result = await mammoth.convertToHtml({ arrayBuffer });
+    return result.value || "";
+  } catch (err) {
+    console.error("Mammoth conversion failed:", err);
+    return "";
+  }
+};
+
+export const convertPdfToText = async (resume) => {
+  if (!resume?.base64Data) return "";
+
+  try {
+    const pdfjsLib = await import("pdfjs-dist/build/pdf");
+    // Use dynamic CDN for worker to avoid build-time issues
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+    const arrayBuffer = dataUrlToArrayBuffer(resume.base64Data);
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+
+    let fullText = "";
+    for (let i = 1; i <= pdf.numPages; i += 1) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items.map((item) => item.str);
+      fullText += strings.join(" ") + "\n";
+    }
+    return fullText;
+  } catch (err) {
+    console.error("PDF text extraction failed:", err);
+    return "";
+  }
 };

@@ -1,4 +1,4 @@
-import { convertDocToHtml, inferResumeMimeType, isDocResume } from "../utils/resumePreview";
+import { convertDocToHtml, convertPdfToText, inferResumeMimeType, isDocResume, isPdfResume } from "../utils/resumePreview";
 import OpenAI from "openai";
 
 const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -112,6 +112,10 @@ export const getGroqKeyAvailable = () => Boolean(import.meta.env.VITE_GROQ_API_K
 
 export const extractResumePlainText = async (resume) => {
   if (!resume?.base64Data) return "";
+
+  if (isPdfResume(resume)) {
+    return (await convertPdfToText(resume)).slice(0, MAX_TEXT_LENGTH);
+  }
 
   if (isDocResume(resume)) {
     const html = await convertDocToHtml(resume);
