@@ -273,41 +273,144 @@ export default function JobDetails() {
                   </div>
                </div>
 
-               <div className="flex flex-col items-start md:items-end gap-2">
-                  <span
-                     className={`saas-badge ${job.status === "active" ? "badge-success" : "badge-warning"}`}
-                  >
-                     {job.status === "active"
-                        ? "Open for Applications"
-                        : job.status === "hold"
-                          ? "On Hold: Not accepting new applications"
-                          : "Applications Closed"}
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                     <button
-                        onClick={() => {
-                           setShowComparePanel((v) => !v);
-                           setCompareResult(null);
-                           setCompareError("");
-                        }}
-                        className="saas-btn saas-btn-secondary"
+               <div className="flex flex-col items-start md:items-end gap-3 min-w-0 md:min-w-[280px]">
+                  <div className="flex flex-col items-start md:items-end gap-2">
+                     <span
+                        className={`saas-badge ${job.status === "active" ? "badge-success" : "badge-warning"}`}
                      >
-                        <Sparkles size={15} />
-                        Compare with Resume
-                     </button>
-                     {appliedJobIds.has(job.id) ? (
-                        <span className="saas-badge badge-info">Already Applied</span>
-                     ) : (
+                        {job.status === "active"
+                           ? "Open for Applications"
+                           : job.status === "hold"
+                             ? "On Hold: Not accepting new applications"
+                             : "Applications Closed"}
+                     </span>
+                     <div className="flex flex-wrap gap-2">
                         <button
-                           onClick={openApplyModal}
-                           disabled={!canApply}
-                           className="saas-btn saas-btn-primary disabled:opacity-50"
+                           onClick={() => {
+                              setShowComparePanel((v) => !v);
+                              if (!showComparePanel) {
+                                 setCompareResult(null);
+                                 setCompareError("");
+                              }
+                           }}
+                           className={`saas-btn ${showComparePanel ? "saas-btn-primary" : "saas-btn-secondary"} text-xs py-1.5`}
                         >
-                           Apply with Resume
-                           <ArrowUpRight size={16} />
+                           <Sparkles size={14} />
+                           {showComparePanel ? "Close Compare" : "Compare Resume"}
                         </button>
-                     )}
+                        {appliedJobIds.has(job.id) ? (
+                           <span className="saas-badge badge-info">Already Applied</span>
+                        ) : (
+                           <button
+                              onClick={openApplyModal}
+                              disabled={!canApply}
+                              className="saas-btn saas-btn-primary disabled:opacity-50 text-xs py-1.5"
+                           >
+                              Apply Now
+                              <ArrowUpRight size={14} />
+                           </button>
+                        )}
+                     </div>
                   </div>
+
+                  {/* Inline Compare controls */}
+                  {showComparePanel && (
+                     <div className="w-full mt-2 p-4 rounded-xl bg-slate-50/50 border border-slate-200/60 transition-all animate-in fade-in slide-in-from-top-2">
+                        {!compareResult && !comparing ? (
+                           <div className="space-y-3">
+                              <div className="relative">
+                                 <FileText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                 <select
+                                    value={compareResumeId}
+                                    onChange={(e) => { setCompareResumeId(e.target.value); setCompareResult(null); }}
+                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500/20"
+                                 >
+                                    <option value="">Select Resume...</option>
+                                    {resumes.map((r) => (
+                                       <option key={r.id} value={r.id}>
+                                          {r.fileName || r.name || "Resume"}
+                                       </option>
+                                    ))}
+                                 </select>
+                              </div>
+                              <button
+                                 onClick={handleCompare}
+                                 disabled={comparing || !compareResumeId}
+                                 className="w-full saas-btn saas-btn-primary text-xs py-2 disabled:opacity-50"
+                              >
+                                 Check Compatibility
+                              </button>
+                              {compareError && (
+                                 <p className="text-[11px] text-red-600 bg-red-50 p-2 rounded-md border border-red-100">
+                                    {compareError}
+                                 </p>
+                              )}
+                           </div>
+                        ) : comparing ? (
+                           <div className="flex flex-col items-center justify-center py-4 space-y-2">
+                              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                              <span className="text-[11px] text-slate-500 font-medium">Analysing fit...</span>
+                           </div>
+                        ) : (
+                           <div className="space-y-4">
+                              <div className="flex items-center gap-3">
+                                 <div
+                                    className="flex flex-col items-center justify-center w-14 h-14 rounded-full border-[3px] shrink-0 bg-white shadow-sm"
+                                    style={{
+                                       borderColor: compareResult.score >= 80 ? "#22c55e" : compareResult.score >= 60 ? "#f59e0b" : "#ef4444",
+                                    }}
+                                 >
+                                    <span className="text-lg font-bold text-slate-900">{compareResult.score}</span>
+                                    <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">% Fit</span>
+                                 </div>
+                                 <div className="min-w-0">
+                                    <p className="text-[11px] font-bold text-slate-900 uppercase tracking-wide">Analysis Result</p>
+                                    <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-3">
+                                       {compareResult.summary || "Matching based on extracted skills and experience."}
+                                    </p>
+                                 </div>
+                              </div>
+
+                              <div className="space-y-2.5">
+                                 <div>
+                                    <p className="text-[10px] font-bold text-emerald-700 uppercase mb-1">Matched Skills</p>
+                                    <div className="flex flex-wrap gap-1">
+                                       {compareResult.matchedSkills?.length > 0 ? (
+                                          compareResult.matchedSkills.slice(0, 6).map((s, i) => (
+                                             <span key={i} className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200/50 font-medium whitespace-nowrap">
+                                                {s}
+                                             </span>
+                                          ))
+                                       ) : (
+                                          <span className="text-[9px] text-slate-400 italic">No direct matches.</span>
+                                       )}
+                                    </div>
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-bold text-rose-700 uppercase mb-1">Missing Skills</p>
+                                    <div className="flex flex-wrap gap-1">
+                                       {compareResult.missingSkills?.length > 0 ? (
+                                          compareResult.missingSkills.slice(0, 6).map((s, i) => (
+                                             <span key={i} className="text-[9px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200/50 font-medium whitespace-nowrap">
+                                                {s}
+                                             </span>
+                                          ))
+                                       ) : (
+                                          <span className="text-[9px] text-slate-400 italic">No major gaps!</span>
+                                       )}
+                                    </div>
+                                 </div>
+                              </div>
+                              <button
+                                 onClick={() => setCompareResult(null)}
+                                 className="w-full text-[10px] text-indigo-600 font-semibold hover:underline bg-indigo-50/50 py-1.5 rounded-lg"
+                              >
+                                 Re-run with different resume
+                              </button>
+                           </div>
+                        )}
+                     </div>
+                  )}
                </div>
             </div>
          </div>
@@ -387,122 +490,6 @@ export default function JobDetails() {
                </div>
             </div>
          </div>
-
-         {/* ── Compare with Resume Panel ── */}
-         {showComparePanel && (
-            <div className="glass-card p-6 space-y-5">
-               <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                     <Sparkles size={18} className="text-indigo-600" />
-                     Compare with Resume
-                  </h2>
-                  <button
-                     onClick={() => { setShowComparePanel(false); setCompareResult(null); }}
-                     className="text-slate-400 hover:text-slate-700"
-                     aria-label="Close compare panel"
-                  >
-                     <X size={18} />
-                  </button>
-               </div>
-
-               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                  <div className="relative flex-1">
-                     <FileText size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                     <select
-                        value={compareResumeId}
-                        onChange={(e) => { setCompareResumeId(e.target.value); setCompareResult(null); }}
-                        className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
-                     >
-                        <option value="">Select a resume...</option>
-                        {resumes.map((r) => (
-                           <option key={r.id} value={r.id}>
-                              {r.fileName || r.name || "Resume"}
-                           </option>
-                        ))}
-                     </select>
-                  </div>
-                  <button
-                     onClick={handleCompare}
-                     disabled={comparing || !compareResumeId}
-                     className="saas-btn saas-btn-primary disabled:opacity-50 shrink-0"
-                  >
-                     {comparing ? "Analysing..." : "Run Comparison"}
-                  </button>
-               </div>
-
-               {resumes.length === 0 && (
-                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                     No resumes found. Please upload one in your Profile first.
-                  </p>
-               )}
-
-               {compareError && (
-                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
-                     {compareError}
-                  </p>
-               )}
-
-               {comparing && (
-                  <div className="text-sm text-indigo-600 animate-pulse">
-                     Extracting resume text and scoring against job requirements...
-                  </div>
-               )}
-
-               {compareResult && !comparing && (
-                  <div className="space-y-4">
-                     <div className="flex items-center gap-4 rounded-xl bg-indigo-50 border border-indigo-100 p-4">
-                        <div
-                           className="flex flex-col items-center justify-center w-20 h-20 rounded-full border-4 shrink-0"
-                           style={{
-                              borderColor: compareResult.score >= 80 ? "#16a34a" : compareResult.score >= 60 ? "#d97706" : "#dc2626",
-                           }}
-                        >
-                           <span className="text-2xl font-bold text-slate-900">{compareResult.score}</span>
-                           <span className="text-[10px] text-slate-500 uppercase tracking-wide">% Fit</span>
-                        </div>
-                        <div>
-                           <p className="text-sm font-semibold text-slate-900">Match Score</p>
-                           {compareResult.summary && (
-                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">{compareResult.summary}</p>
-                           )}
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-3">✓ Matched Skills</p>
-                           <div className="flex flex-wrap gap-1.5">
-                              {compareResult.matchedSkills?.length > 0 ? (
-                                 compareResult.matchedSkills.map((skill, i) => (
-                                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 font-medium">
-                                       {skill}
-                                    </span>
-                                 ))
-                              ) : (
-                                 <span className="text-xs text-slate-500">None detected from dictionary</span>
-                              )}
-                           </div>
-                        </div>
-
-                        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
-                           <p className="text-xs font-semibold uppercase tracking-wide text-rose-700 mb-3">✗ Missing Skills</p>
-                           <div className="flex flex-wrap gap-1.5">
-                              {compareResult.missingSkills?.length > 0 ? (
-                                 compareResult.missingSkills.map((skill, i) => (
-                                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full bg-white text-rose-700 border border-rose-200 font-medium">
-                                       {skill}
-                                    </span>
-                                 ))
-                              ) : (
-                                 <span className="text-xs text-slate-500">No gaps detected — great match!</span>
-                              )}
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               )}
-            </div>
-         )}
 
          {showApplyModal && (
             <div className="fixed inset-0 z-40 bg-slate-900/50 p-4 flex items-center justify-center">
