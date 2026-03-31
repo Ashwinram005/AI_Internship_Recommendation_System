@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GetLanded - Create Your Account</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface-variant": "#595c5e",
+                        "primary": "#00647b",
+                        "surface-variant": "#d9dde0",
+                        "on-tertiary": "#f8f1ff",
+                        "on-secondary-container": "#004594",
+                        "on-error-container": "#570008",
+                        "surface-dim": "#d0d5d8",
+                        "surface-tint": "#00647b",
+                        "primary-dim": "#00576c",
+                        "on-secondary-fixed-variant": "#004ea5",
+                        "surface-container-highest": "#d9dde0",
+                        "secondary-fixed": "#bed2ff",
+                        "surface-container-high": "#dfe3e6",
+                        "primary-container": "#00cffc",
+                        "on-surface": "#2c2f31",
+                        "tertiary-container": "#bda1ff",
+                        "on-primary-fixed-variant": "#004a5c",
+                        "inverse-on-surface": "#9a9d9f",
+                        "tertiary-fixed-dim": "#b190ff",
+                        "secondary": "#0058ba",
+                        "background": "#f5f7f9",
+                        "error-dim": "#9f0519",
+                        "secondary-dim": "#004da4",
+                        "surface-container-low": "#eef1f3",
+                        "on-secondary": "#f0f2ff",
+                        "on-error": "#ffefee",
+                        "tertiary-dim": "#6200e1",
+                        "surface-bright": "#f5f7f9",
+                        "on-secondary-fixed": "#00326f",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#00cffc",
+                        "on-primary-container": "#004050",
+                        "tertiary-fixed": "#bda1ff",
+                        "on-tertiary-container": "#3c0091",
+                        "outline": "#747779",
+                        "inverse-surface": "#0b0f10",
+                        "surface-container": "#e5e9eb",
+                        "error-container": "#fb5151",
+                        "surface": "#f5f7f9",
+                        "on-tertiary-fixed-variant": "#4700a7",
+                        "outline-variant": "#abadaf",
+                        "on-tertiary-fixed": "#1f0052",
+                        "primary-fixed-dim": "#00c0ea",
+                        "primary-fixed": "#00cffc",
+                        "error": "#b31b25",
+                        "on-primary": "#e2f6ff",
+                        "secondary-fixed-dim": "#a8c4ff",
+                        "secondary-container": "#bed2ff",
+                        "on-background": "#2c2f31",
+                        "tertiary": "#7000ff",
+                        "on-primary-fixed": "#002a35"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #f5f7f9;
+        }
+        .primary-gradient-bg {
+            background: linear-gradient(135deg, #00cffc 0%, #0058ba 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .ghost-border-focus:focus-within {
+            outline: 2px solid rgba(0, 207, 252, 0.3);
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Gradient Blobs -->
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-container opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute top-1/2 -left-48 w-[500px] h-[500px] bg-secondary-container opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
+<!-- Navigation Suppressed for Signup focus as per rules -->
+<header class="fixed top-0 w-full z-50 px-8 py-6">
+<div class="max-w-7xl mx-auto flex justify-between items-center">
+<div class="text-2xl font-extrabold tracking-tighter text-on-surface">
+                GetLanded
+            </div>
+<a class="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">
+                Support
+            </a>
+</div>
+</header>
+<main class="min-h-screen flex items-center justify-center px-6 py-24">
+<div class="w-full max-w-md">
+<!-- Auth Header -->
+<div class="text-center mb-10">
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-3">
+                    Create your account
+                </h1>
+<p class="text-on-surface-variant font-medium">
+                    Join the future of professional landing.
+                </p>
+</div>
+<!-- Signup Card -->
+<div class="glass-card rounded-[1rem] p-8 shadow-[0_12px_40px_rgba(44,47,49,0.06)] border border-white/20">
+<form class="space-y-6">
+<!-- Account Type Toggle -->
+<div class="bg-surface-container-low p-1.5 rounded-full flex gap-1 items-center">
+<button class="flex-1 py-2.5 px-4 rounded-full text-sm font-bold transition-all primary-gradient-bg text-white shadow-lg" type="button">
+                            Candidate
+                        </button>
+<button class="flex-1 py-2.5 px-4 rounded-full text-sm font-bold text-on-surface-variant hover:text-on-surface transition-all" type="button">
+                            Employer
+                        </button>
+</div>
+<!-- Input Fields -->
+<div class="space-y-5">
+<div class="space-y-2">
+<label class="block text-[0.75rem] uppercase tracking-wider font-bold text-on-surface-variant ml-1">Full Name</label>
+<div class="bg-surface-container-low rounded-xl flex items-center px-4 transition-all ghost-border-focus">
+<span class="material-symbols-outlined text-outline-variant mr-3">person</span>
+<input class="w-full bg-transparent border-none focus:ring-0 py-4 text-on-surface placeholder:text-outline-variant font-medium" placeholder="John Doe" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-[0.75rem] uppercase tracking-wider font-bold text-on-surface-variant ml-1">Email</label>
+<div class="bg-surface-container-low rounded-xl flex items-center px-4 transition-all ghost-border-focus">
+<span class="material-symbols-outlined text-outline-variant mr-3">mail</span>
+<input class="w-full bg-transparent border-none focus:ring-0 py-4 text-on-surface placeholder:text-outline-variant font-medium" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-[0.75rem] uppercase tracking-wider font-bold text-on-surface-variant ml-1">Password</label>
+<div class="bg-surface-container-low rounded-xl flex items-center px-4 transition-all ghost-border-focus">
+<span class="material-symbols-outlined text-outline-variant mr-3">lock</span>
+<input class="w-full bg-transparent border-none focus:ring-0 py-4 text-on-surface placeholder:text-outline-variant font-medium" placeholder="••••••••" type="password"/>
+</div>
+</div>
+</div>
+<!-- Terms -->
+<p class="text-[0.7rem] text-on-surface-variant leading-relaxed text-center px-4">
+                        By signing up, you agree to our 
+                        <a class="text-primary font-semibold hover:underline decoration-primary/30" href="#">Terms of Service</a> 
+                        and 
+                        <a class="text-primary font-semibold hover:underline decoration-primary/30" href="#">Privacy Policy</a>.
+                    </p>
+<!-- CTA -->
+<button class="w-full primary-gradient-bg text-on-primary py-4 rounded-xl font-bold tracking-tight shadow-[0_12px_40px_rgba(0,100,123,0.15)] hover:brightness-110 active:scale-[0.98] transition-all" type="submit">
+                        Create Account
+                    </button>
+</form>
+<!-- Divider -->
+<div class="relative my-8 flex items-center justify-center">
+<div class="w-full border-t border-outline-variant opacity-20"></div>
+<span class="absolute bg-white px-4 text-[0.65rem] uppercase tracking-[0.1em] font-extrabold text-outline-variant">OR</span>
+</div>
+<!-- Social Signups (Modern pattern) -->
+<div class="flex gap-4">
+<button class="flex-1 flex items-center justify-center py-3 bg-surface-container-low rounded-xl hover:bg-surface-container-high transition-colors">
+<img alt="Google" class="w-5 h-5 grayscale opacity-70" data-alt="simple minimal google logo icon on a clean white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAff9TPwo3k26B7kfLUPzKvD3n7UTLBjejQ7N0t7g2foKCYE4tRbLsamRQtxp0kUO3p0ktTjHJbcTpFOYGHNE3GE10Bfe5XFPqqZXrzvTqCbkYFKH9dhQsiWRQxjDUeiz1riPPY-E1Z3-j26dViQ7wyn2xNg1h3Pej2FW1_wKH16xWMMr3Wqy9EqUm5C-jT9Y-Gtt0w6vBSYHF9VtHgh-ile7I86tBMvMbYD82GaCqNfJbhjLdN5McAGcIRDXbEwZFPIZ-FkdEcpyQ"/>
+</button>
+<button class="flex-1 flex items-center justify-center py-3 bg-surface-container-low rounded-xl hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface opacity-70" style="font-variation-settings: 'FILL' 1;">ios</span>
+</button>
+</div>
+</div>
+<!-- Footer Link -->
+<div class="text-center mt-8">
+<p class="text-on-surface-variant font-medium">
+                    Already have an account? 
+                    <a class="text-primary font-bold hover:underline decoration-primary/30 underline-offset-4 ml-1" href="#">Log in</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Visual Element: Floating Abstract Image -->
+<div class="fixed bottom-12 right-12 hidden lg:block w-72 h-72">
+<div class="relative w-full h-full">
+<div class="absolute inset-0 bg-primary-container/20 rounded-full animate-pulse blur-3xl"></div>
+<img alt="Modern Abstract Concept" class="w-full h-full object-cover rounded-[2rem] shadow-2xl relative z-10 border border-white/40" data-alt="abstract composition of translucent glass spheres and soft cyan waves floating in a clean white space with ethereal light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnXksYcpmu694nNNlS0x8BuCheIJYMjPRuuBjaJkdouEsQvQXWXbFMX_djHp4_7ltBB36sWuPpwHoL44lFEF8g9HI3HRD2caKsBLVbpD0QWWpQ2urMMLy4ve8WOYKmpxRpq0NYf9fc5wXHHWrI6Kh2aXvaqHVmS8HbUfUtzGyRwUeAudhKtStaQ4vBDLF37iyAQqv6oB4YnzkOmzXPCtauPjQMxmJ-dM2BVjh1Ia33zTgnEo8SkuYKk4WetL5vobT2YW8-65rFAKg"/>
+</div>
+</div>
+<!-- Footer Component from JSON -->
+<footer class="w-full py-12 border-t border-slate-200/50 dark:border-slate-800/50 bg-[#f5f7f9] dark:bg-slate-950">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 max-w-7xl mx-auto">
+<p class="text-sm font-manrope tracking-wide text-slate-400">© 2024 GetLanded AI. All rights reserved.</p>
+<div class="flex gap-8 mt-6 md:mt-0">
+<a class="text-sm font-manrope tracking-wide text-slate-400 hover:text-cyan-500 hover:underline decoration-cyan-500/30 underline-offset-4 transition-all duration-200" href="#">Privacy Policy</a>
+<a class="text-sm font-manrope tracking-wide text-slate-400 hover:text-cyan-500 hover:underline decoration-cyan-500/30 underline-offset-4 transition-all duration-200" href="#">Terms of Service</a>
+<a class="text-sm font-manrope tracking-wide text-slate-400 hover:text-cyan-500 hover:underline decoration-cyan-500/30 underline-offset-4 transition-all duration-200" href="#">Cookie Policy</a>
+</div>
+</div>
+</footer>
+</body></html>

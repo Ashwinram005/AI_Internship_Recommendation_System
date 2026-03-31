@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "./stitch-theme.css";
 
 :root {
   --color-primary: #003ec7;
@@ -359,5 +360,30 @@
       padding-left: 12px;
       padding-right: 12px;
     }
+  }
+
+  /* Stitch UI Utilities */
+  .stitch-glass-panel {
+    background: rgba(45, 52, 73, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .stitch-hero-gradient {
+    background: radial-gradient(circle at 50% 50%, rgba(0, 209, 255, 0.15) 0%, rgba(11, 19, 38, 0) 70%);
+  }
+  .stitch-cta-gradient {
+    background: linear-gradient(135deg, #a4e6ff 0%, #00d1ff 100%);
+  }
+  .stitch-glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .stitch-primary-gradient-btn {
+    background: linear-gradient(135deg, #00cffc 0%, #0058ba 100%);
+  }
+  .stitch-ambient-blob {
+    filter: blur(80px);
+    z-index: -1;
   }
 }

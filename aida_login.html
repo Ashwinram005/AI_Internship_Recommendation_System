@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | GetLanded</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "on-primary": "#e2f6ff",
+              "on-error-container": "#570008",
+              "error": "#b31b25",
+              "secondary-container": "#bed2ff",
+              "tertiary-fixed-dim": "#b190ff",
+              "tertiary": "#7000ff",
+              "surface-variant": "#d9dde0",
+              "on-surface-variant": "#595c5e",
+              "error-dim": "#9f0519",
+              "secondary-fixed-dim": "#a8c4ff",
+              "on-tertiary-container": "#3c0091",
+              "on-secondary": "#f0f2ff",
+              "on-tertiary": "#f8f1ff",
+              "surface-tint": "#00647b",
+              "secondary-fixed": "#bed2ff",
+              "primary-dim": "#00576c",
+              "on-primary-fixed": "#002a35",
+              "on-surface": "#2c2f31",
+              "primary-fixed-dim": "#00c0ea",
+              "primary": "#00647b",
+              "surface-container-highest": "#d9dde0",
+              "tertiary-dim": "#6200e1",
+              "outline": "#747779",
+              "background": "#f5f7f9",
+              "surface-container": "#e5e9eb",
+              "on-secondary-fixed-variant": "#004ea5",
+              "on-tertiary-fixed": "#1f0052",
+              "surface-container-low": "#eef1f3",
+              "primary-container": "#00cffc",
+              "error-container": "#fb5151",
+              "on-tertiary-fixed-variant": "#4700a7",
+              "outline-variant": "#abadaf",
+              "secondary-dim": "#004da4",
+              "tertiary-container": "#bda1ff",
+              "inverse-surface": "#0b0f10",
+              "on-error": "#ffefee",
+              "on-primary-fixed-variant": "#004a5c",
+              "inverse-primary": "#00cffc",
+              "tertiary-fixed": "#bda1ff",
+              "on-secondary-fixed": "#00326f",
+              "inverse-on-surface": "#9a9d9f",
+              "surface-container-high": "#dfe3e6",
+              "primary-fixed": "#00cffc",
+              "surface-bright": "#f5f7f9",
+              "secondary": "#0058ba",
+              "surface": "#f5f7f9",
+              "surface-dim": "#d0d5d8",
+              "on-background": "#2c2f31",
+              "on-primary-container": "#004050",
+              "on-secondary-container": "#004594"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .primary-gradient-btn {
+            background: linear-gradient(135deg, #00cffc 0%, #0058ba 100%);
+        }
+        .ambient-blob {
+            filter: blur(80px);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen relative overflow-hidden flex flex-col">
+<!-- Ambient Gradient Blobs -->
+<div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-primary-container opacity-10 ambient-blob"></div>
+<div class="absolute bottom-[5%] left-[-10%] w-[600px] h-[600px] rounded-full bg-secondary-container opacity-10 ambient-blob"></div>
+<!-- Navigation (Suppressed per Shell Visibility Rule for Login) -->
+<header class="fixed top-0 w-full z-50">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-slate-900 dark:text-slate-100 font-headline">GetLanded</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-slate-500 hover:text-cyan-500 transition-colors duration-200 font-manrope text-sm font-medium tracking-tight" href="#">Product</a>
+<a class="text-slate-500 hover:text-cyan-500 transition-colors duration-200 font-manrope text-sm font-medium tracking-tight" href="#">Pricing</a>
+<a class="text-cyan-500 font-manrope text-sm font-medium tracking-tight" href="#">Sign up</a>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-6 pt-20 pb-12">
+<div class="w-full max-w-md">
+<!-- Login Card -->
+<div class="glass-card p-10 rounded-[2rem] shadow-[0_12px_40px_rgba(44,47,49,0.06)] border border-white/20">
+<div class="mb-10 text-center">
+<h1 class="text-4xl font-extrabold tracking-[-0.04em] text-on-surface mb-3 font-headline">Welcome back</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed">Please enter your details to sign in.</p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1 font-label">Email Address</label>
+<input class="w-full px-6 py-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary-container/30 focus:bg-surface-container-lowest transition-all duration-200 outline-none text-on-surface placeholder:text-outline-variant" placeholder="name@company.com" type="email"/>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant font-label">Password</label>
+<a class="text-xs font-bold uppercase tracking-widest text-secondary hover:text-primary transition-colors font-label" href="#">Forgot?</a>
+</div>
+<input class="w-full px-6 py-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary-container/30 focus:bg-surface-container-lowest transition-all duration-200 outline-none text-on-surface placeholder:text-outline-variant" placeholder="••••••••" type="password"/>
+</div>
+<div class="pt-4">
+<button class="primary-gradient-btn w-full py-4 rounded-xl text-on-primary font-bold text-lg shadow-[0_12px_24px_rgba(0,100,123,0.15)] hover:saturate-150 active:scale-[0.98] transition-all duration-200" type="submit">
+                            Sign In
+                        </button>
+</div>
+</form>
+<div class="mt-8 flex items-center gap-4">
+<div class="h-px flex-grow bg-outline-variant/20"></div>
+<span class="text-xs font-bold uppercase tracking-widest text-outline-variant font-label">or continue with</span>
+<div class="h-px flex-grow bg-outline-variant/20"></div>
+</div>
+<div class="mt-8 grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors duration-200 text-on-surface-variant font-medium text-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="google">google</span>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors duration-200 text-on-surface-variant font-medium text-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="apple">ios</span>
+                        Apple
+                    </button>
+</div>
+</div>
+<div class="mt-8 text-center">
+<p class="text-on-surface-variant font-medium">
+                    Don't have an account? 
+                    <a class="text-secondary font-bold hover:underline underline-offset-4 ml-1" href="#">Sign up</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Footer (Universal for informational pages) -->
+<footer class="w-full">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 py-10 w-full max-w-7xl mx-auto gap-6 md:gap-0">
+<div class="text-lg font-bold text-slate-900 dark:text-slate-100 font-headline">GetLanded</div>
+<div class="flex gap-8">
+<a class="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label" href="#">Privacy Policy</a>
+<a class="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label" href="#">Terms of Service</a>
+<a class="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label" href="#">Help Center</a>
+</div>
+<div class="text-slate-400 font-manrope text-xs uppercase tracking-widest font-label text-center md:text-right">
+                © 2024 GetLanded. Built for the modern professional.
+            </div>
+</div>
+</footer>
+</body></html>
