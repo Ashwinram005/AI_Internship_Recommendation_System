@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import {
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 
 export default function JobMatcher() {
+  const navigate = useNavigate();
   const [resumes, setResumes] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
