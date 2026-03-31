@@ -212,7 +212,7 @@ export default function Signup() {
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-stitch-primary-container opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute top-1/2 -left-48 w-[500px] h-[500px] bg-stitch-secondary-container opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <header className="fixed top-0 w-full z-50 px-8 py-6">
+      <header className="fixed top-0 w-full z-50 px-4 md:px-8 py-4 md:py-6 bg-white/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/" className="text-2xl font-extrabold tracking-tighter text-stitch-on-surface font-headline">
             GetLanded
@@ -223,7 +223,7 @@ export default function Signup() {
         </div>
       </header>
 
-      <main className="min-h-screen flex items-center justify-center px-6 py-24 relative z-10">
+      <main className="min-h-screen flex items-center justify-center px-6 pt-32 pb-24 relative z-10">
         <div className="w-full max-w-md">
           {/* Auth Header */}
           <div className="text-center mb-10">

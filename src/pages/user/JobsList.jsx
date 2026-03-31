@@ -172,7 +172,7 @@ export default function JobsList() {
             />
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600 font-semibold inline-flex items-center gap-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600 font-semibold inline-flex items-center gap-2 whitespace-nowrap">
             <Filter size={14} /> {filtered.length} result
             {filtered.length === 1 ? "" : "s"}
           </div>

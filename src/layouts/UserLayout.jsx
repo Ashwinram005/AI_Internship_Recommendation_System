@@ -40,7 +40,12 @@ export default function UserLayout() {
   ];
 
   return (
-    <div className="app-layout">
+    <div className="app-layout min-h-screen bg-[#FAF8FF] relative overflow-hidden">
+      {/* Ambient Blobs */}
+      <div className="stitch-ambient-blob absolute -top-24 -left-24 w-96 h-96 bg-cyan-400/10 rounded-full" />
+      <div className="stitch-ambient-blob absolute top-1/2 -right-24 w-80 h-80 bg-blue-500/10 rounded-full" />
+      <div className="stitch-ambient-blob absolute -bottom-24 left-1/3 w-64 h-64 bg-indigo-400/10 rounded-full" />
+
       {mobileOpen ? (
         <button
           className="mobile-sidebar-overlay lg:hidden"
@@ -56,7 +61,7 @@ export default function UserLayout() {
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <header className="app-header">
           <div className="flex items-center gap-3 text-sm">
             <button

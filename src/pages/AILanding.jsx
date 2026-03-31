@@ -5,18 +5,18 @@ export default function AILanding() {
     <div className="dark bg-stitch-background text-stitch-on-surface font-body selection:bg-stitch-primary/30 min-h-screen">
       {/* TopNavBar */}
       <header className="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-xl shadow-sky-900/5">
-        <nav className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
-          <div className="text-2xl font-bold tracking-tighter text-white font-headline">
-            GetLanded
-          </div>
+        <nav className="flex justify-between items-center px-4 md:px-8 py-4 max-w-7xl mx-auto">
+            <div className="text-xl md:text-2xl font-bold tracking-tighter text-white font-headline">
+              GetLanded
+            </div>
           <div className="hidden md:flex items-center gap-8 font-['Manrope'] tracking-tight">
             <Link className="text-sky-400 font-semibold hover:text-white hover:bg-white/5 transition-all px-3 py-1 rounded-lg" to="/">Home</Link>
             <Link className="text-slate-300 hover:text-white hover:bg-white/5 transition-all px-3 py-1 rounded-lg" to="/">Features</Link>
             <Link className="text-slate-300 hover:text-white hover:bg-white/5 transition-all px-3 py-1 rounded-lg" to="/">Pricing</Link>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-slate-300 hover:text-white font-medium px-4 py-2 transition-all">Login</Link>
-            <Link to="/signup" className="stitch-cta-gradient text-stitch-on-primary-container font-bold px-6 py-2.5 rounded-full scale-95 active:scale-90 duration-200 shadow-lg shadow-stitch-primary/20">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link to="/login" className="text-slate-300 hover:text-white font-medium px-2 md:px-4 py-2 transition-all text-sm md:text-base">Login</Link>
+            <Link to="/signup" className="stitch-cta-gradient text-stitch-on-primary-container font-bold px-4 md:px-6 py-2 md:py-2.5 rounded-full scale-95 active:scale-90 duration-200 shadow-lg shadow-stitch-primary/20 text-sm md:text-base whitespace-nowrap">
               Sign Up
             </Link>
           </div>
@@ -34,7 +34,7 @@ export default function AILanding() {
             <div className="space-y-8 relative z-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stitch-surface-container-high/50 border border-stitch-outline-variant/15 text-sm font-label tracking-wider text-sky-300">
                 <span className="w-2 h-2 rounded-full bg-stitch-tertiary shadow-[0_0_8px_#63efff]"></span>
-                NEW: AI RESUME OPTIMIZER 2.0
+                NEW: AI INTERNSHIP RECOMMENDATION
               </div>
               <h1 className="text-5xl md:text-7xl font-extrabold font-headline leading-[1.1] tracking-tight text-white">
                 Land Your Dream <span className="text-transparent bg-clip-text stitch-cta-gradient">Internship</span> with AI

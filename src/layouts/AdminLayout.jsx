@@ -35,7 +35,11 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="app-layout">
+    <div className="app-layout min-h-screen bg-[#FAF8FF] relative overflow-hidden">
+      {/* Ambient Blobs */}
+      <div className="stitch-ambient-blob absolute -top-12 left-1/2 w-96 h-96 bg-indigo-500/10 rounded-full" />
+      <div className="stitch-ambient-blob absolute bottom-0 -right-12 w-72 h-72 bg-purple-400/10 rounded-full" />
+
       {mobileOpen ? (
         <button
           className="mobile-sidebar-overlay lg:hidden"
@@ -51,7 +55,7 @@ export default function AdminLayout() {
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <header className="app-header">
           <div className="flex items-center gap-3 text-sm">
             <button

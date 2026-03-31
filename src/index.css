@@ -90,7 +90,9 @@
     top: 0;
     flex-shrink: 0;
     border-right: none;
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
     padding: 20px 16px;
@@ -114,8 +116,9 @@
     top: 0;
     z-index: 40;
     height: 72px;
-    background: rgba(250, 248, 255, 0.8);
-    backdrop-filter: blur(20px);
+    background: rgba(250, 248, 255, 0.6);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
     border-bottom: none;
     padding: 0 20px;
     display: flex;

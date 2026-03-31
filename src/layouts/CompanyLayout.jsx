@@ -37,7 +37,11 @@ export default function CompanyLayout() {
   ];
 
   return (
-    <div className="app-layout">
+    <div className="app-layout min-h-screen bg-[#FAF8FF] relative overflow-hidden">
+      {/* Ambient Blobs */}
+      <div className="stitch-ambient-blob absolute top-0 -right-24 w-96 h-96 bg-blue-400/10 rounded-full" />
+      <div className="stitch-ambient-blob absolute bottom-0 left-1/4 w-80 h-80 bg-cyan-300/10 rounded-full" />
+
       {mobileOpen ? (
         <button
           className="mobile-sidebar-overlay lg:hidden"
@@ -53,7 +57,7 @@ export default function CompanyLayout() {
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <header className="app-header">
           <div className="flex items-center gap-3 text-sm">
             <button
