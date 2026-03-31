@@ -13,18 +13,11 @@ import {
   Layers3,
   MapPin,
   Search,
-  Sparkles,
-  Trophy,
   WalletCards,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getApplicationsByUser } from "../../services/applicationService";
 import { getVisiblePostingsForCandidates } from "../../services/postingService";
-import { getResumesByUser } from "../../services/resumeService";
-import {
-  getGroqKeyAvailable,
-  rankJobsForResume,
-} from "../../services/aiMatchingService";
 
 export default function JobsList() {
   const navigate = useNavigate();
@@ -34,13 +27,8 @@ export default function JobsList() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("match");
   const [page, setPage] = useState(1);
   const pageSize = 8;
-  const [jobScoresById, setJobScoresById] = useState({});
-  const [aiLoading, setAiLoading] = useState(false);
-  const [resumeUsedName, setResumeUsedName] = useState("");
-  const [aiNotice, setAiNotice] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -59,53 +47,9 @@ export default function JobsList() {
               .map((app) => app.jobId),
           ),
         );
-
-        if (!user?.uid) {
-          setAiNotice("");
-          setJobScoresById({});
-          return;
-        }
-
-        const resumes = await getResumesByUser(user.uid);
-        if (!resumes.length) {
-          setAiNotice(
-            "Upload a resume to unlock AI job matching and missing skill insights.",
-          );
-          setJobScoresById({});
-          return;
-        }
-
-        const selectedResume = [...resumes].sort(
-          (a, b) => (b.uploadedAt?.seconds || 0) - (a.uploadedAt?.seconds || 0),
-        )[0];
-        setResumeUsedName(
-          selectedResume.fileName || selectedResume.name || "Resume",
-        );
-
-        setAiLoading(true);
-        const ranking = await rankJobsForResume({
-          resume: selectedResume,
-          jobs: postings,
-        });
-
-        const mapped = ranking.reduce((acc, item) => {
-          acc[item.jobId] = item;
-          return acc;
-        }, {});
-
-        setJobScoresById(mapped);
-        if (!getGroqKeyAvailable()) {
-          setAiNotice(
-            "Groq API key missing. Showing fallback keyword-based ranking.",
-          );
-        } else {
-          setAiNotice("");
-        }
       } catch (err) {
         console.error("Failed to load jobs:", err);
         setError("Failed to load jobs. Please refresh.");
-      } finally {
-        setAiLoading(false);
       }
     };
 
@@ -114,14 +58,12 @@ export default function JobsList() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, typeFilter, statusFilter, sortBy, jobs.length]);
+  }, [search, typeFilter, statusFilter, jobs.length]);
 
   const normalizeType = (typeValue) =>
     (typeValue || "job").toLowerCase() === "internship" ? "internship" : "job";
 
   const getPostedTime = (item) => item?.createdAt?.seconds || 0;
-
-  const getMatchScore = (jobId) => jobScoresById[jobId]?.score || 0;
 
   const getSearchHaystack = (job) =>
     `${job.title || ""} ${job.company || ""} ${job.skills || ""} ${job.description || ""}`.toLowerCase();
@@ -133,16 +75,7 @@ export default function JobsList() {
         (statusFilter === "all" || j.status === statusFilter) &&
         getSearchHaystack(j).includes(search.toLowerCase()),
     )
-    .sort((a, b) => {
-      if (sortBy === "latest") return getPostedTime(b) - getPostedTime(a);
-      if (sortBy === "deadline") {
-        return (
-          new Date(a.deadline || "2100-01-01") -
-          new Date(b.deadline || "2100-01-01")
-        );
-      }
-      return getMatchScore(b.id) - getMatchScore(a.id);
-    });
+    .sort((a, b) => getPostedTime(b) - getPostedTime(a));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -307,27 +240,6 @@ export default function JobsList() {
         </div>
       )}
 
-      {(aiLoading || aiNotice || resumeUsedName) && (
-        <div className="glass-card p-5 space-y-1 bg-[var(--color-surface-alt)]">
-          <p className="text-sm font-semibold text-slate-900 inline-flex items-center gap-2">
-            <Trophy size={15} className="text-[var(--color-primary)]" />
-            AI Job Matching
-          </p>
-          {resumeUsedName && (
-            <p className="text-xs text-slate-500">
-              Ranking using resume: {resumeUsedName}
-            </p>
-          )}
-          {aiLoading ? (
-            <p className="text-xs text-[#0b525b]">
-              Analyzing resume against job descriptions...
-            </p>
-          ) : null}
-          {aiNotice ? (
-            <p className="text-xs text-amber-700">{aiNotice}</p>
-          ) : null}
-        </div>
-      )}
 
       {filtered.length === 0 ? (
         <div className="glass-card p-16 text-center">
@@ -348,7 +260,6 @@ export default function JobsList() {
                 onClick={() => navigate(`/user/jobs/${job.id}`)}
               >
                 {(() => {
-                  const aiScore = jobScoresById[job.id];
                   return (
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-hover)] text-white rounded-xl shadow-sm flex items-center justify-center">
@@ -379,18 +290,6 @@ export default function JobsList() {
                             className="flex items-center gap-2"
                             onClick={(e) => e.stopPropagation()}
                           >
-                             {aiScore ? (
-                               <div className="flex flex-col items-end gap-1">
-                                  <span className="saas-badge badge-info whitespace-nowrap">
-                                    {aiScore.score}% match
-                                  </span>
-                                  {aiScore.confidence && (
-                                     <span className="text-[10px] font-bold text-indigo-500/70 uppercase tracking-tighter">
-                                        {aiScore.confidence}% Accuracy
-                                     </span>
-                                  )}
-                               </div>
-                             ) : null}
                             <span
                               className={`saas-badge ${job.status === "active" ? "badge-success" : job.status === "hold" ? "badge-warning" : "badge-warning"}`}
                             >
