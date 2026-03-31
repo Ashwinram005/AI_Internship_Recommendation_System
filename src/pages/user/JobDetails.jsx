@@ -293,7 +293,7 @@ export default function JobDetails() {
                                  setCompareError("");
                               }
                            }}
-                           className={`saas-btn ${showComparePanel ? "saas-btn-primary" : "saas-btn-secondary"} text-xs py-1.5`}
+                           className={`saas-btn ${showComparePanel ? "bg-slate-100 text-slate-700" : "bg-blue-600 text-white hover:bg-blue-700"} text-xs py-1.5`}
                         >
                            <Sparkles size={14} />
                            {showComparePanel ? "Close Compare" : "Compare Resume"}
@@ -336,7 +336,7 @@ export default function JobDetails() {
                               <button
                                  onClick={handleCompare}
                                  disabled={comparing || !compareResumeId}
-                                 className="w-full saas-btn saas-btn-primary text-xs py-2 disabled:opacity-50"
+                                 className="w-full saas-btn bg-blue-600 text-white hover:bg-blue-700 text-xs py-2 disabled:opacity-50"
                               >
                                  Check Compatibility
                               </button>
