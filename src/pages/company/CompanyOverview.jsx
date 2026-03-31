@@ -27,9 +27,17 @@ export default function CompanyOverview() {
             companyId: user.uid,
          });
 
+         const engagedApps = filteredApps.filter(
+            (a) => a.status && a.status !== "submitted" && a.status !== "withdrawn",
+         ).length;
+         const engagementRate = filteredApps.length > 0
+            ? Math.round((engagedApps / filteredApps.length) * 100)
+            : 0;
+
          setStats({
             activeJobs: jobs.filter((j) => j.status === "active").length,
             candidates: filteredApps.length,
+            engagementRate,
          });
 
          setRecentApps(
@@ -62,7 +70,7 @@ export default function CompanyOverview() {
       },
       {
          label: "Engagement Rate",
-         value: "84%",
+         value: `${stats.engagementRate ?? 0}%`,
          icon: BarChart3,
          color: "text-amber-500",
          bg: "bg-amber-50",
