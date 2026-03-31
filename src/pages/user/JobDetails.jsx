@@ -19,6 +19,7 @@ import {
 } from "../../services/applicationService";
 import { getPostingById } from "../../services/postingService";
 import { getResumesByUser } from "../../services/resumeService";
+import { extractResumePlainText, rankJobsForResume } from "../../services/aiMatchingService";
 
 export default function JobDetails() {
    const navigate = useNavigate();
@@ -35,6 +36,13 @@ export default function JobDetails() {
    const [submitting, setSubmitting] = useState(false);
    const [error, setError] = useState("");
    const [success, setSuccess] = useState("");
+
+   // Compare with Resume state
+   const [showComparePanel, setShowComparePanel] = useState(false);
+   const [compareResumeId, setCompareResumeId] = useState("");
+   const [compareResult, setCompareResult] = useState(null);
+   const [comparing, setComparing] = useState(false);
+   const [compareError, setCompareError] = useState("");
 
    useEffect(() => {
       const load = async () => {
@@ -60,6 +68,7 @@ export default function JobDetails() {
             setResumes(userResumes || []);
             if (userResumes?.length) {
                setSelectedResumeId(userResumes[0].id);
+               setCompareResumeId(userResumes[0].id);
             }
          } catch (err) {
             console.error("Failed to load job details:", err);
@@ -135,6 +144,27 @@ export default function JobDetails() {
          setError(err.message || "Could not submit application.");
       } finally {
          setSubmitting(false);
+      }
+   };
+
+   const handleCompare = async () => {
+      const resume = resumes.find((r) => r.id === compareResumeId);
+      if (!resume) {
+         setCompareError("Please select a resume to compare.");
+         return;
+      }
+      try {
+         setComparing(true);
+         setCompareError("");
+         setCompareResult(null);
+         const results = await rankJobsForResume({ resume, jobs: [job] });
+         const result = results.find((r) => r.jobId === job.id) || results[0] || null;
+         setCompareResult(result);
+      } catch (err) {
+         console.error("Compare failed:", err);
+         setCompareError("Could not compare resume. Please try again.");
+      } finally {
+         setComparing(false);
       }
    };
 
@@ -245,18 +275,31 @@ export default function JobDetails() {
                           ? "On Hold: Not accepting new applications"
                           : "Applications Closed"}
                   </span>
-                  {appliedJobIds.has(job.id) ? (
-                     <span className="saas-badge badge-info">Already Applied</span>
-                  ) : (
+                  <div className="flex flex-wrap gap-2">
                      <button
-                        onClick={openApplyModal}
-                        disabled={!canApply}
-                        className="saas-btn saas-btn-primary disabled:opacity-50"
+                        onClick={() => {
+                           setShowComparePanel((v) => !v);
+                           setCompareResult(null);
+                           setCompareError("");
+                        }}
+                        className="saas-btn saas-btn-secondary"
                      >
-                        Apply with Resume
-                        <ArrowUpRight size={16} />
+                        <Sparkles size={15} />
+                        Compare with Resume
                      </button>
-                  )}
+                     {appliedJobIds.has(job.id) ? (
+                        <span className="saas-badge badge-info">Already Applied</span>
+                     ) : (
+                        <button
+                           onClick={openApplyModal}
+                           disabled={!canApply}
+                           className="saas-btn saas-btn-primary disabled:opacity-50"
+                        >
+                           Apply with Resume
+                           <ArrowUpRight size={16} />
+                        </button>
+                     )}
+                  </div>
                </div>
             </div>
          </div>
@@ -336,6 +379,122 @@ export default function JobDetails() {
                </div>
             </div>
          </div>
+
+         {/* ── Compare with Resume Panel ── */}
+         {showComparePanel && (
+            <div className="glass-card p-6 space-y-5">
+               <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                     <Sparkles size={18} className="text-indigo-600" />
+                     Compare with Resume
+                  </h2>
+                  <button
+                     onClick={() => { setShowComparePanel(false); setCompareResult(null); }}
+                     className="text-slate-400 hover:text-slate-700"
+                     aria-label="Close compare panel"
+                  >
+                     <X size={18} />
+                  </button>
+               </div>
+
+               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div className="relative flex-1">
+                     <FileText size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                     <select
+                        value={compareResumeId}
+                        onChange={(e) => { setCompareResumeId(e.target.value); setCompareResult(null); }}
+                        className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900"
+                     >
+                        <option value="">Select a resume...</option>
+                        {resumes.map((r) => (
+                           <option key={r.id} value={r.id}>
+                              {r.fileName || r.name || "Resume"}
+                           </option>
+                        ))}
+                     </select>
+                  </div>
+                  <button
+                     onClick={handleCompare}
+                     disabled={comparing || !compareResumeId}
+                     className="saas-btn saas-btn-primary disabled:opacity-50 shrink-0"
+                  >
+                     {comparing ? "Analysing..." : "Run Comparison"}
+                  </button>
+               </div>
+
+               {resumes.length === 0 && (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                     No resumes found. Please upload one in your Profile first.
+                  </p>
+               )}
+
+               {compareError && (
+                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+                     {compareError}
+                  </p>
+               )}
+
+               {comparing && (
+                  <div className="text-sm text-indigo-600 animate-pulse">
+                     Extracting resume text and scoring against job requirements...
+                  </div>
+               )}
+
+               {compareResult && !comparing && (
+                  <div className="space-y-4">
+                     <div className="flex items-center gap-4 rounded-xl bg-indigo-50 border border-indigo-100 p-4">
+                        <div
+                           className="flex flex-col items-center justify-center w-20 h-20 rounded-full border-4 shrink-0"
+                           style={{
+                              borderColor: compareResult.score >= 80 ? "#16a34a" : compareResult.score >= 60 ? "#d97706" : "#dc2626",
+                           }}
+                        >
+                           <span className="text-2xl font-bold text-slate-900">{compareResult.score}</span>
+                           <span className="text-[10px] text-slate-500 uppercase tracking-wide">% Fit</span>
+                        </div>
+                        <div>
+                           <p className="text-sm font-semibold text-slate-900">Match Score</p>
+                           {compareResult.summary && (
+                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">{compareResult.summary}</p>
+                           )}
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-3">✓ Matched Skills</p>
+                           <div className="flex flex-wrap gap-1.5">
+                              {compareResult.matchedSkills?.length > 0 ? (
+                                 compareResult.matchedSkills.map((skill, i) => (
+                                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full bg-white text-emerald-700 border border-emerald-200 font-medium">
+                                       {skill}
+                                    </span>
+                                 ))
+                              ) : (
+                                 <span className="text-xs text-slate-500">None detected from dictionary</span>
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+                           <p className="text-xs font-semibold uppercase tracking-wide text-rose-700 mb-3">✗ Missing Skills</p>
+                           <div className="flex flex-wrap gap-1.5">
+                              {compareResult.missingSkills?.length > 0 ? (
+                                 compareResult.missingSkills.map((skill, i) => (
+                                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full bg-white text-rose-700 border border-rose-200 font-medium">
+                                       {skill}
+                                    </span>
+                                 ))
+                              ) : (
+                                 <span className="text-xs text-slate-500">No gaps detected — great match!</span>
+                              )}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+            </div>
+         )}
 
          {showApplyModal && (
             <div className="fixed inset-0 z-40 bg-slate-900/50 p-4 flex items-center justify-center">
