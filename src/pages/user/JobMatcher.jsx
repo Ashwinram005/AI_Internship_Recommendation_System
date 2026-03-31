@@ -398,9 +398,6 @@ export default function JobMatcher() {
                     </span>
                   </div>
 
-                  {!!job.summary && (
-                    <p className="mt-2 text-xs text-slate-500">{job.summary}</p>
-                  )}
 
                   {expandedMatchId === job.id && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -412,16 +409,6 @@ export default function JobMatcher() {
                           {job.matchedSkills?.length
                             ? job.matchedSkills.join(", ")
                             : "No explicit keyword overlap detected."}
-                        </p>
-                      </div>
-                      <div className="md:col-span-3 bg-[var(--color-warning-soft)] border-transparent shadow-sm rounded-lg px-4 py-3">
-                        <p className="text-[var(--color-warning)] uppercase tracking-wide text-[11px] font-bold">
-                          Missing Keywords
-                        </p>
-                        <p className="text-amber-900 text-sm mt-1">
-                          {job.missingSkills?.length
-                            ? job.missingSkills.join(", ")
-                            : "No major missing keywords identified."}
                         </p>
                       </div>
                       <div className="md:col-span-3 bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">

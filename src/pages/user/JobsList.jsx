@@ -426,7 +426,7 @@ export default function JobsList() {
                           {(job.skills || "")
                             .split(",")
                             .filter(Boolean)
-                            .slice(0, 5)
+                            .slice(0, 3)
                             .map((s, i) => (
                               <span
                                 key={i}
@@ -449,26 +449,6 @@ export default function JobsList() {
                           {job.description || "No description provided."}
                         </p>
 
-                        {aiScore?.missingSkills?.length ? (
-                          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                            <p className="text-xs uppercase tracking-wide text-amber-800 font-semibold">
-                              Missing requirements from this job description
-                            </p>
-                            <ol className="mt-2 space-y-1 text-xs text-amber-900 list-decimal list-inside">
-                              {aiScore.missingSkills
-                                .slice(0, 4)
-                                .map((skill) => (
-                                  <li key={`${job.id}-${skill}`}>{skill}</li>
-                                ))}
-                            </ol>
-                          </div>
-                        ) : null}
-
-                        {aiScore?.summary ? (
-                          <p className="text-xs text-slate-500 mt-2">
-                            {aiScore.summary}
-                          </p>
-                        ) : null}
 
                         <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                           <span className="flex items-center gap-1.5">
