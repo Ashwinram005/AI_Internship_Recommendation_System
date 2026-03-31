@@ -336,20 +336,6 @@ export default function JobMatcher() {
                         <p className="text-xs text-slate-400 mt-0.5">
                           {job.company}
                         </p>
-                        <div className="flex gap-2 mt-3 flex-wrap">
-                          {(job.skills || "")
-                            .split(",")
-                            .filter(Boolean)
-                            .slice(0, 3)
-                            .map((s, i) => (
-                              <span
-                                key={i}
-                                className="text-xs text-slate-500 bg-slate-50 px-2 py-0.5 rounded"
-                              >
-                                {s.trim()}
-                              </span>
-                            ))}
-                        </div>
                       </div>
                     </div>
 

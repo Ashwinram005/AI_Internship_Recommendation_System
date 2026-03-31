@@ -298,20 +298,6 @@ export default function JobsList() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">
-              Sort
-            </p>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-            >
-              <option value="match">Best Match</option>
-              <option value="latest">Latest Posted</option>
-              <option value="deadline">Nearest Deadline</option>
-            </select>
-          </div>
         </div>
       </section>
 
@@ -422,21 +408,6 @@ export default function JobsList() {
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {(job.skills || "")
-                            .split(",")
-                            .filter(Boolean)
-                            .slice(0, 3)
-                            .map((s, i) => (
-                              <span
-                                key={i}
-                                className="text-xs text-[var(--color-primary-hover)] bg-[var(--color-primary-soft)] px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium"
-                              >
-                                <Sparkles size={10} />
-                                {s.trim()}
-                              </span>
-                            ))}
-                        </div>
 
                         {job.salaryRange && (
                            <p className="text-xs font-medium text-emerald-700 mt-3 flex items-center gap-1.5">
