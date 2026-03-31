@@ -15,7 +15,7 @@ export default function CompanyOverview() {
    const { user } = useAuth();
    const [stats, setStats] = useState({ activeJobs: 0, candidates: 0 });
    const [recentApps, setRecentApps] = useState([]);
-   const [recentJobs, setRecentJobs] = useState([]);
+
 
    useEffect(() => {
       const loadData = async () => {
@@ -31,14 +31,7 @@ export default function CompanyOverview() {
             activeJobs: jobs.filter((j) => j.status === "active").length,
             candidates: filteredApps.length,
          });
-         setRecentJobs(
-            jobs
-               .sort(
-                  (a, b) =>
-                     (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
-               )
-               .slice(0, 3),
-         );
+
          setRecentApps(
             filteredApps
                .sort(
@@ -148,49 +141,6 @@ export default function CompanyOverview() {
                                  </div>
                               </div>
                               <span className="saas-badge badge-info">New</span>
-                           </div>
-                        ))
-                     )}
-                  </div>
-               </div>
-
-               <div>
-                  <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                     <h3 className="font-medium text-slate-900">Recent Job Postings</h3>
-                     <Link
-                        to="/company/manage-jobs"
-                        className="text-sm text-indigo-500 hover:text-indigo-400 font-medium flex items-center gap-1"
-                     >
-                        Manage listings <ArrowUpRight size={14} />
-                     </Link>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                     {recentJobs.length === 0 ? (
-                        <div className="p-10 text-center">
-                           <p className="text-sm text-slate-500">
-                              No job postings yet.
-                           </p>
-                        </div>
-                     ) : (
-                        recentJobs.map((job, i) => (
-                           <div
-                              key={i}
-                              className="px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                           >
-                              <div className="flex items-center gap-3">
-                                 <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-medium text-sm">
-                                    <Briefcase size={16} />
-                                 </div>
-                                 <div>
-                                    <p className="text-sm font-medium text-slate-900">
-                                       {job.title}
-                                    </p>
-                                    <p className="text-xs text-slate-500 capitalize">
-                                       {job.type || "Full-time"} · {job.status}
-                                    </p>
-                                 </div>
-                              </div>
-                              <ArrowUpRight size={14} className="text-slate-300" />
                            </div>
                         ))
                      )}
