@@ -19,7 +19,7 @@ import {
 } from "../../services/applicationService";
 import { getPostingById } from "../../services/postingService";
 import { getResumesByUser } from "../../services/resumeService";
-import { extractResumePlainText, rankJobsForResume } from "../../services/aiMatchingService";
+import { rankJobsForResume } from "../../services/aiMatchingService";
 
 export default function JobDetails() {
    const navigate = useNavigate();
@@ -153,16 +153,24 @@ export default function JobDetails() {
          setCompareError("Please select a resume to compare.");
          return;
       }
+      if (!resume.base64Data) {
+         setCompareError("This resume file is missing. Please re-upload it in your Profile.");
+         return;
+      }
       try {
          setComparing(true);
          setCompareError("");
          setCompareResult(null);
-         const results = await rankJobsForResume({ resume, jobs: [job] });
-         const result = results.find((r) => r.jobId === job.id) || results[0] || null;
+         const results = await rankJobsForResume({ resume, jobs: [{ ...job, id: job.id }] });
+         if (!results || results.length === 0) {
+            setCompareError("No comparison result returned. The resume may have no extractable text.");
+            return;
+         }
+         const result = results[0];
          setCompareResult(result);
       } catch (err) {
          console.error("Compare failed:", err);
-         setCompareError("Could not compare resume. Please try again.");
+         setCompareError(`Comparison failed: ${err?.message || "Unknown error. Check console for details."}`);
       } finally {
          setComparing(false);
       }
