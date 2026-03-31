@@ -145,6 +145,7 @@ export default function ManageJobs() {
             applicationId: app.id,
             candidateName: candidate.name || "Candidate",
             resume: buildResumeView(app, resumeDoc),
+            skills: candidate.skills || [],
           };
         });
 

@@ -75,8 +75,18 @@ export const extractLocalEntities = (text = "") => {
 /**
  * Calculates a match score between resume and job entities.
  */
-export const calculateLocalMatchScore = (resumeText, job) => {
+export const calculateLocalMatchScore = (resumeText, job, profileSkills = []) => {
   const resumeEntities = extractLocalEntities(resumeText);
+
+  // Normalize profileSkills if string, convert to array
+  const normalizedProfileSkills = (typeof profileSkills === "string" 
+    ? profileSkills.split(",").map(s => s.trim().toLowerCase()) 
+    : profileSkills.map(s => String(s).trim().toLowerCase())
+  ).filter(Boolean);
+
+  // Merge profile skills into resumeEntities.skills
+  resumeEntities.skills = [...new Set([...resumeEntities.skills, ...normalizedProfileSkills])];
+
   const jobDescEntities = extractLocalEntities(job.description || "");
   const jobExplicitSkills = (job.skills || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
   

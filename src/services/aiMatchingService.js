@@ -73,8 +73,8 @@ const hasRequirementMatch = (resumeTokens, requirement) => {
 
 import { calculateLocalMatchScore } from "./localNerService";
 
-const localRankScore = ({ resumeText, job }) => {
-  return calculateLocalMatchScore(resumeText, job);
+const localRankScore = ({ resumeText, job, profileSkills = [] }) => {
+  return calculateLocalMatchScore(resumeText, job, profileSkills);
 };
 
 // ... keep original tokenize/unique helpers if needed ...
@@ -228,12 +228,19 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
       ...candidate,
       resumeText: (await extractResumePlainText(candidate.resume)) || "",
       inlinePdf: getInlineResumeDataIfPdf(candidate.resume),
+      profileSkills: candidate.skills || []
     })),
   );
 
   const fallback = candidateWithText
     .map((candidate) => {
-      const estimate = localRankScore({ resumeText: candidate.resumeText, job });
+      // If application count > 20, we use profileSkills to augment the score
+      const useProfileSkills = candidates.length > 20;
+      const estimate = localRankScore({ 
+        resumeText: candidate.resumeText, 
+        job, 
+        profileSkills: useProfileSkills ? candidate.profileSkills : [] 
+      });
       return {
         applicationId: candidate.applicationId,
         score: estimate.score,
@@ -264,6 +271,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
         candidateName: candidate.candidateName || "Candidate",
         resumeText: normalizeText(candidate.resumeText || "").slice(0, 3000),
         resumeName: candidate.resume?.fileName || "resume",
+        skills: candidate.profileSkills || []
       }),
       "If resume text is limited, use title, skills, and description context for a conservative score.",
     ].join("\n");
@@ -301,6 +309,7 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
           candidateName: candidate.candidateName || "Candidate",
           resumeText: normalizeText(candidate.resumeText).slice(0, 3000),
           resumeName: candidate.resume?.fileName || "resume",
+          skills: candidate.profileSkills || []
         })),
       ),
     ].join("\n");
