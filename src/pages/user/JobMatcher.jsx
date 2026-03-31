@@ -362,8 +362,8 @@ export default function JobMatcher() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => apply(job.id, job.companyId)}
-                          className="saas-btn saas-btn-secondary py-2 px-5 text-sm"
+                          onClick={() => navigate(`/user/jobs/${job.id}`)}
+                          className="saas-btn saas-btn-primary py-2 px-5 text-sm"
                         >
                           Apply Now
                           <ChevronRight size={14} />
