@@ -657,11 +657,12 @@ export default function ManageJobs() {
                 const candidateName = candidate.name || "Candidate";
                 const candidateInitial = candidateName.charAt(0).toUpperCase();
                 const isPdf = isPdfResume(resume);
+                const aiScore = candidateScoreByApplicationId[selectedApplication.id];
 
                 return (
                   <>
                     <div className="glass-card p-4 flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 font-semibold flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 font-semibold flex items-center justify-center shrink-0">
                         {candidateInitial || <UserRound size={18} />}
                       </div>
                       <div className="min-w-0">
@@ -676,6 +677,59 @@ export default function ManageJobs() {
                         </div>
                       </div>
                     </div>
+
+                    {aiScore && (
+                      <div className="glass-card p-4 space-y-3 border-indigo-100 bg-indigo-50/30">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <Sparkles size={16} className="text-indigo-600" />
+                            Matcher Insights
+                          </h4>
+                          <span className={`score-badge ${aiScore.score >= 80 ? "score-high" : aiScore.score >= 65 ? "score-mid" : "score-low"}`}>
+                            {aiScore.score}% fit
+                          </span>
+                        </div>
+                        {aiScore.summary && (
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {aiScore.summary}
+                          </p>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-emerald-700 font-semibold mb-2">
+                              Matched Skills
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {aiScore.matchedSkills?.length > 0 ? (
+                                aiScore.matchedSkills.map((skill, idx) => (
+                                  <span key={idx} className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                    {skill}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-500">None detected</span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-rose-700 font-semibold mb-2">
+                              Missing Skills
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {aiScore.missingSkills?.length > 0 ? (
+                                aiScore.missingSkills.map((skill, idx) => (
+                                  <span key={idx} className="text-[11px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                                    {skill}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-500">None detected</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="glass-card p-4 space-y-2">
                       <h4 className="text-sm font-semibold text-slate-900">
