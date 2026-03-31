@@ -17,7 +17,7 @@ import {
    createApplication,
    getApplicationsByUser,
 } from "../../services/applicationService";
-import { getPostingById } from "../../services/postingService";
+import { getPostingById, getVisiblePostingsForCandidates } from "../../services/postingService";
 import { getResumesByUser } from "../../services/resumeService";
 import { rankJobsForResume } from "../../services/aiMatchingService";
 
@@ -161,12 +161,23 @@ export default function JobDetails() {
          setComparing(true);
          setCompareError("");
          setCompareResult(null);
-         const results = await rankJobsForResume({ resume, jobs: [{ ...job, id: job.id }] });
+         const allJobs = await getVisiblePostingsForCandidates();
+         let jobsToRank = allJobs;
+         if (!allJobs.find((j) => j.id === job.id)) {
+            jobsToRank = [...allJobs, { ...job, id: job.id }];
+         }
+
+         const results = await rankJobsForResume({ resume, jobs: jobsToRank });
          if (!results || results.length === 0) {
             setCompareError("No comparison result returned. The resume may have no extractable text.");
             return;
          }
-         const result = results[0];
+         const result = results.find((r) => r.jobId === job.id);
+         if (!result) {
+            setCompareError("Failed to calculate a score for this specific role.");
+            return;
+         }
+         
          setCompareResult(result);
       } catch (err) {
          console.error("Compare failed:", err);
