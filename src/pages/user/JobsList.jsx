@@ -330,9 +330,9 @@ export default function JobsList() {
                               e.stopPropagation();
                               navigate(`/user/jobs/${job.id}`);
                             }}
-                            className="saas-btn saas-btn-primary text-[10px] py-1.5 px-3"
+                            className="saas-btn saas-btn-primary text-[10px] py-1.5 px-3 inline-flex items-center gap-1"
                           >
-                            Apply Now
+                            <span>Apply Now</span>
                             <ArrowUpRight size={12} />
                           </button>
                         </div>
