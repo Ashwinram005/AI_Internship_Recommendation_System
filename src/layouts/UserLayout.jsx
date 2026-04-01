@@ -62,31 +62,6 @@ export default function UserLayout() {
         onClose={() => setMobileOpen(false)}
       />
       <div className="flex-1 flex flex-col min-w-0 relative z-10 lg:pl-[286px]">
-        <header className="app-header">
-          <div className="flex items-center gap-3 text-sm">
-            <button
-              className="saas-btn saas-btn-secondary p-2 lg:hidden"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu size={16} />
-            </button>
-            <span className="text-slate-700 font-semibold">{crumb}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {profilePhoto ? (
-              <img
-                src={profilePhoto}
-                alt={displayName}
-                className="w-9 h-9 rounded-full object-cover border border-slate-200"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-semibold text-indigo-600 text-sm">
-                {initials}
-              </div>
-            )}
-          </div>
-        </header>
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <Outlet />
         </main>
