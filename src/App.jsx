@@ -45,7 +45,7 @@ function App() {
     <Routes>
       {/* Public */}
       <Route element={<PublicRoute />}>
-        <Route path="/" element={<AILanding />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Route>
@@ -92,7 +92,7 @@ function App() {
         path="*"
         element={
           <Navigate
-            to={user ? getDefaultRouteByRole(user.role) : "/"}
+            to={user ? getDefaultRouteByRole(user.role) : "/login"}
             replace
           />
         }
