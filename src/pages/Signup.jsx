@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BriefcaseBusiness, Lock, Mail, User, Building2, Globe, MapPin, Tag } from "lucide-react";
+import { Bird, Eye, Mail, Lock, User, Building2, Globe, MapPin, Tag } from "lucide-react";
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -31,6 +31,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -207,247 +208,208 @@ export default function Signup() {
   };
 
   return (
-    <div className="bg-stitch-background text-stitch-on-surface min-h-screen relative overflow-x-hidden selection:bg-stitch-primary-container selection:text-stitch-on-primary-container font-body">
-      {/* Ambient Gradient Blobs */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-stitch-primary-container opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute top-1/2 -left-48 w-[500px] h-[500px] bg-stitch-secondary-container opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
-
-      <header className="fixed top-0 w-full z-50 px-4 md:px-8 py-4 md:py-6 bg-white/60 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-extrabold tracking-tighter text-stitch-on-surface font-headline">
-            GetLanded
-          </Link>
-          <a className="text-sm font-semibold text-stitch-on-surface-variant hover:text-stitch-primary transition-colors" href="#">
-            Support
-          </a>
-        </div>
-      </header>
-
-      <main className="min-h-screen flex items-center justify-center px-6 pt-32 pb-24 relative z-10">
-        <div className="w-full max-w-md">
-          {/* Auth Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-stitch-on-surface mb-3 font-headline">
-              Create your account
-            </h1>
-            <p className="text-stitch-on-surface-variant font-medium">
-              Join the future of professional landing.
+    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-4 md:p-8 font-body">
+      <div className="w-full max-w-6xl h-auto min-h-[800px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row-reverse">
+        
+        {/* Left/Right Panel: Onboarding (Blue) */}
+        <div className="lg:w-[40%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-12 flex flex-col items-center justify-center text-center text-white relative">
+          <div className="relative z-10 space-y-8">
+            <h1 className="text-5xl font-bold tracking-tight font-headline">Already Here?</h1>
+            <p className="text-blue-50/80 text-xl font-medium leading-relaxed max-w-xs mx-auto">
+              Sign in and continue your journey with us!
             </p>
+            <div className="pt-4">
+              <Link 
+                to="/login"
+                className="inline-block px-12 py-4 border-2 border-white/40 rounded-full font-bold text-lg hover:bg-white/10 transition-all active:scale-[0.98]"
+              >
+                SIGN IN
+              </Link>
+            </div>
           </div>
+          
+          {/* Subtle decorative background element */}
+          <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none overflow-hidden">
+            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-white rounded-full blur-[100px]"></div>
+          </div>
+        </div>
 
-          {/* Signup Card */}
-          <div className="stitch-glass-card rounded-[1rem] p-8 shadow-[0_12px_40px_rgba(44,47,49,0.06)] border border-white/20">
-            <form onSubmit={onEmailSignup} className="space-y-6">
+        {/* Form Panel (White) */}
+        <div className="lg:w-[60%] p-8 md:p-12 flex flex-col justify-center bg-white overflow-y-auto max-h-screen lg:max-h-none">
+          <div className="w-full max-w-lg mx-auto space-y-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Bird className="text-blue-600" size={24} />
+                </div>
+                <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">Join Us!</span>
+              </div>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tight font-headline">Create Account</h2>
+              <p className="text-slate-500 font-medium">
+                Choose your role and start your professional journey today.
+              </p>
+            </div>
+
+            <form onSubmit={onEmailSignup} className="space-y-4">
               {/* Account Type Toggle */}
-              <div className="bg-[rgba(238,241,243,0.7)] p-1.5 rounded-full flex gap-1 items-center">
+              <div className="bg-[#f0f4f8] p-1.5 rounded-full flex gap-1 items-center mb-4">
                 <button 
                   type="button"
                   onClick={() => setRole("user")}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-bold transition-all ${role === "user" ? "stitch-primary-gradient-btn text-white shadow-lg" : "text-stitch-on-surface-variant hover:text-stitch-on-surface"}`}
+                  className={`flex-1 py-3 px-6 rounded-full text-sm font-black transition-all ${role === 'user' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Candidate
                 </button>
                 <button 
                   type="button"
                   onClick={() => setRole("company")}
-                  className={`flex-1 py-2.5 px-4 rounded-full text-sm font-bold transition-all ${role === "company" ? "stitch-primary-gradient-btn text-white shadow-lg" : "text-stitch-on-surface-variant hover:text-stitch-on-surface"}`}
+                  className={`flex-1 py-3 px-6 rounded-full text-sm font-black transition-all ${role === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Employer
                 </button>
               </div>
 
-              {/* Input Fields */}
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Full Name</label>
-                  <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                    <User size={18} className="text-stitch-outline-variant mr-3" />
-                    <input 
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none" 
-                      placeholder={role === 'company' ? "Company Name" : "John Doe"} 
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative flex items-center group">
+                  <User className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    placeholder={role === 'company' ? "Company Name" : "Full Name"}
+                    className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                  />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Email</label>
-                  <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                    <Mail size={18} className="text-stitch-outline-variant mr-3" />
-                    <input 
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none" 
-                      placeholder="name@company.com" 
-                    />
-                  </div>
+                <div className="relative flex items-center group">
+                  <Mail className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email Address"
+                    className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                  />
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Password</label>
-                  <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                    <Lock size={18} className="text-stitch-outline-variant mr-3" />
-                    <input 
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none" 
-                      placeholder="••••••••" 
-                    />
-                  </div>
-                </div>
+              <div className="relative flex items-center group">
+                <Lock className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Password"
+                  className="w-full pl-12 pr-12 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  <Eye size={20} />
+                </button>
+              </div>
 
-                {role === "company" && (
-                  <div className="space-y-4 pt-4 border-t border-slate-200/50 mt-4">
-                    <p className="text-xs font-bold text-stitch-outline-variant uppercase tracking-widest text-center font-label">
-                      Company Details
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Industry</label>
+              {role === "company" && (
+                <div className="space-y-4 pt-4 border-t border-slate-100 mt-4 animate-in fade-in slide-in-from-top-2">
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="relative flex items-center group">
+                        <Building2 className="absolute left-4 text-slate-400" size={18} />
                         <select
                           value={industry}
                           onChange={(e) => setIndustry(e.target.value)}
-                          className="w-full bg-[rgba(238,241,243,0.5)] border-none rounded-xl focus:ring-2 focus:ring-stitch-primary/30 focus:bg-white py-3.5 px-4 text-stitch-on-surface font-medium outline-none text-sm appearance-none"
+                          className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-sm"
                         >
-                          <option value="">Select...</option>
+                          <option value="">Industry...</option>
                           <option value="Tech">Technology</option>
                           <option value="Finance">Finance</option>
                           <option value="Healthcare">Healthcare</option>
-                          <option value="Education">Education</option>
-                          <option value="Marketing">Marketing</option>
-                          <option value="Other">Other</option>
                         </select>
                       </div>
-                      
-                      <div className="space-y-1.5">
-                         <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Size</label>
-                         <select
-                          value={companySize}
-                          onChange={(e) => setCompanySize(e.target.value)}
-                          className="w-full bg-[rgba(238,241,243,0.5)] border-none rounded-xl focus:ring-2 focus:ring-stitch-primary/30 focus:bg-white py-3.5 px-4 text-stitch-on-surface font-medium outline-none text-sm appearance-none"
-                        >
-                          <option value="">Select...</option>
-                          <option value="1-10">1-10</option>
-                          <option value="11-50">11-50</option>
-                          <option value="51-200">51-200</option>
-                          <option value="201-500">201-500</option>
-                          <option value="500+">500+</option>
-                        </select>
-                      </div>
+                      <select
+                        value={companySize}
+                        onChange={(e) => setCompanySize(e.target.value)}
+                        className="w-full px-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-sm"
+                      >
+                        <option value="">Size...</option>
+                        <option value="1-10">1-10</option>
+                        <option value="50+">50+</option>
+                      </select>
+                   </div>
+                   <div className="relative flex items-center group">
+                     <Globe className="absolute left-4 text-slate-400" size={18} />
+                     <input 
+                       type="url"
+                       value={website}
+                       onChange={(e) => setWebsite(e.target.value)}
+                       placeholder="Website URL"
+                       className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                     />
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                    <div className="relative flex items-center group">
+                      <MapPin className="absolute left-4 text-slate-400" size={18} />
+                      <input 
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Location"
+                        className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                      />
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Website</label>
-                      <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                        <Globe size={18} className="text-stitch-outline-variant mr-3" />
-                        <input 
-                          type="url"
-                          value={website}
-                          onChange={(e) => setWebsite(e.target.value)}
-                          className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none text-sm" 
-                          placeholder="https://company.com" 
-                        />
-                      </div>
+                    <div className="relative flex items-center group">
+                      <Tag className="absolute left-4 text-slate-400" size={18} />
+                      <input 
+                        type="text"
+                        value={tagline}
+                        onChange={(e) => setTagline(e.target.value)}
+                        placeholder="Tagline"
+                        className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                      />
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Location</label>
-                      <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                        <MapPin size={18} className="text-stitch-outline-variant mr-3" />
-                        <input 
-                          type="text"
-                          value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                          className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none text-sm" 
-                          placeholder="San Francisco, CA" 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="block text-[0.75rem] uppercase tracking-wider font-bold text-stitch-on-surface-variant ml-1 font-label">Tagline</label>
-                      <div className="bg-[rgba(238,241,243,0.5)] rounded-xl flex items-center px-4 transition-all focus-within:ring-2 focus-within:ring-stitch-primary/30 focus-within:bg-white">
-                        <Tag size={18} className="text-stitch-outline-variant mr-3" />
-                        <input 
-                          type="text"
-                          value={tagline}
-                          onChange={(e) => setTagline(e.target.value)}
-                          className="w-full bg-transparent border-none focus:ring-0 py-3.5 text-stitch-on-surface placeholder:text-slate-400 font-medium outline-none text-sm" 
-                          placeholder="Revolutionizing AI..." 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                   </div>
+                </div>
+              )}
 
               {error && (
-                <div className="p-3 rounded-xl text-sm border border-red-200 bg-red-50 text-red-700 text-center font-medium">
+                <div className="p-4 rounded-2xl text-sm border border-red-100 bg-red-50 text-red-600 font-semibold text-center">
                   {error}
                 </div>
               )}
 
-              {/* Terms */}
-              <p className="text-[0.7rem] text-stitch-on-surface-variant leading-relaxed text-center px-4 mt-2">
-                By signing up, you agree to our <a href="#" className="text-stitch-primary font-semibold hover:underline decoration-stitch-primary/30">Terms of Service</a> and <a href="#" className="text-stitch-primary font-semibold hover:underline decoration-stitch-primary/30">Privacy Policy</a>.
-              </p>
-
-              {/* CTA */}
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
-                className="w-full stitch-primary-gradient-btn text-white py-4 rounded-xl font-bold tracking-tight shadow-[0_12px_40px_rgba(0,100,123,0.15)] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100"
+                className="w-full py-5 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide mt-4"
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-8 flex items-center justify-center">
-              <div className="w-full border-t border-slate-200"></div>
-              <span className="absolute bg-white px-4 text-[0.65rem] uppercase tracking-[0.1em] font-extrabold text-stitch-outline-variant">OR</span>
+            <div className="relative p-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase font-extrabold tracking-[0.2em] text-slate-300">
+                <span className="bg-white px-4">Or sign up with</span>
+              </div>
             </div>
 
-            {/* Social Signups */}
-            <div className="flex gap-4">
-              <button 
-                type="button"
-                onClick={onGoogleSignup}
-                disabled={googleLoading}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[rgba(238,241,243,0.5)] rounded-xl hover:bg-[#dfe3e6] transition-colors text-sm font-bold text-stitch-on-surface-variant disabled:opacity-70"
-              >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-                {googleLoading ? "Connecting..." : "Google"}
-              </button>
-            </div>
-
-            <div className="text-center mt-8">
-              <p className="text-stitch-on-surface-variant font-medium text-sm">
-                Already have an account? 
-                <Link to="/login" className="text-stitch-primary font-bold hover:underline decoration-stitch-primary/30 underline-offset-4 ml-1">Log in</Link>
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={onGoogleSignup}
+              disabled={googleLoading}
+              className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors active:scale-[0.98] disabled:opacity-70"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+              <span>Google</span>
+            </button>
           </div>
         </div>
-      </main>
-
-      {/* Visual Element: Floating Abstract Image */}
-      <div className="fixed bottom-12 right-12 hidden lg:block w-72 h-72 pointer-events-none z-0">
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0 bg-stitch-primary-container/20 rounded-full animate-pulse blur-3xl"></div>
-          <img alt="Modern Abstract Concept" className="w-full h-full object-cover rounded-[2rem] shadow-2xl relative z-10 border border-white/40 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnXksYcpmu694nNNlS0x8BuCheIJYMjPRuuBjaJkdouEsQvQXWXbFMX_djHp4_7ltBB36sWuPpwHoL44lFEF8g9HI3HRD2caKsBLVbpD0QWWpQ2urMMLy4ve8WOYKmpxRpq0NYf9fc5wXHHWrI6Kh2aXvaqHVmS8HbUfUtzGyRwUeAudhKtStaQ4vBDLF37iyAQqv6oB4YnzkOmzXPCtauPjQMxmJ-dM2BVjh1Ia33zTgnEo8SkuYKk4WetL5vobT2YW8-65rFAKg"/>
-        </div>
       </div>
-
-
     </div>
   );
 }

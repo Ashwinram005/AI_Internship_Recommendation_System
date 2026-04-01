@@ -8,6 +8,7 @@ import {
 import { auth } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { getDefaultRouteByRole } from "../routes/routeUtils";
+import { Bird, Eye, Mail, Lock } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -70,106 +72,130 @@ export default function Login() {
   };
 
   return (
-    <div className="bg-stitch-surface font-body text-stitch-on-surface min-h-screen relative overflow-hidden flex flex-col">
-      {/* Ambient Gradient Blobs */}
-      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-stitch-primary-container opacity-10 stitch-ambient-blob"></div>
-      <div className="absolute bottom-[5%] left-[-10%] w-[600px] h-[600px] rounded-full bg-stitch-secondary-container opacity-10 stitch-ambient-blob"></div>
-      
-      {/* Navigation */}
-      <header className="fixed top-0 w-full z-50">
-        <div className="flex justify-between items-center px-8 py-6 w-full max-w-7xl mx-auto">
-          <Link to="/" className="text-2xl font-bold tracking-tighter text-slate-900 font-headline">GetLanded</Link>
-          <div className="hidden md:flex gap-8 items-center">
-            <Link className="text-slate-500 hover:text-cyan-500 transition-colors duration-200 font-manrope text-sm font-medium tracking-tight" to="/">Product</Link>
-            <Link className="text-slate-500 hover:text-cyan-500 transition-colors duration-200 font-manrope text-sm font-medium tracking-tight" to="/">Pricing</Link>
-            <Link className="text-cyan-500 font-manrope text-sm font-medium tracking-tight" to="/signup">Sign up</Link>
+    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-4 md:p-8 font-body">
+      <div className="w-full max-w-6xl h-auto min-h-[700px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row">
+        
+        {/* Left Panel: Onboarding (Blue) */}
+        <div className="lg:w-[40%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-12 flex flex-col items-center justify-center text-center text-white relative">
+          <div className="relative z-10 space-y-8">
+            <h1 className="text-5xl font-bold tracking-tight font-headline">New Here?</h1>
+            <p className="text-blue-50/80 text-xl font-medium leading-relaxed max-w-xs mx-auto">
+              Sign up and discover a great amount of new opportunities!
+            </p>
+            <div className="pt-4">
+              <Link 
+                to="/signup"
+                className="inline-block px-12 py-4 border-2 border-white/40 rounded-full font-bold text-lg hover:bg-white/10 transition-all active:scale-[0.98]"
+              >
+                SIGN UP
+              </Link>
+            </div>
+          </div>
+          
+          {/* Subtle decorative background element */}
+          <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-white rounded-full blur-[100px]"></div>
           </div>
         </div>
-      </header>
 
-      <main className="flex-grow flex items-center justify-center px-6 pt-20 pb-12 relative z-10">
-        <div className="w-full max-w-md">
-          {/* Login Card */}
-          <div className="stitch-glass-card p-10 rounded-[2rem] shadow-[0_12px_40px_rgba(44,47,49,0.06)] border border-white/20">
-            <div className="mb-10 text-center">
-              <h1 className="text-4xl font-extrabold tracking-[-0.04em] text-stitch-on-surface mb-3 font-headline">Welcome back</h1>
-              <p className="text-stitch-on-surface-variant text-lg leading-relaxed">Please enter your details to sign in.</p>
+        {/* Right Panel: Login Form (White) */}
+        <div className="lg:w-[60%] p-8 md:p-16 flex flex-col justify-center bg-white">
+          <div className="w-full max-w-md mx-auto space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Bird className="text-blue-600" size={24} />
+                </div>
+                <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">Welcome Back!</span>
+              </div>
+              <h2 className="text-5xl font-black text-slate-900 tracking-tight font-headline">Hello Again!</h2>
+              <p className="text-slate-500 text-lg font-medium">
+                Sign in to manage your job applications and saved opportunities.
+              </p>
             </div>
 
-            <form onSubmit={onEmailLogin} className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-widest text-stitch-on-surface-variant px-1 font-label">Email Address</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="name@company.com" 
-                  className="w-full px-6 py-4 rounded-xl bg-[rgba(238,241,243,0.5)] border-none focus:ring-2 focus:ring-stitch-primary-container/30 focus:bg-white transition-all duration-200 outline-none text-stitch-on-surface placeholder:text-slate-400" 
-                />
+            <form onSubmit={onEmailLogin} className="space-y-5">
+              <div className="space-y-1.5">
+                <div className="relative flex items-center group">
+                  <Mail className="absolute left-5 text-slate-400 transition-colors group-focus-within:text-blue-500" size={18} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email Address"
+                    className="w-full pl-14 pr-6 py-5 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium placeholder:text-slate-400"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-stitch-on-surface-variant font-label">Password</label>
-                  <a href="#" className="text-xs font-bold uppercase tracking-widest text-stitch-secondary hover:text-stitch-primary transition-colors font-label">Forgot?</a>
+              <div className="space-y-1.5">
+                <div className="relative flex items-center group">
+                  <Lock className="absolute left-5 text-slate-400 transition-colors group-focus-within:text-blue-500" size={18} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Password"
+                    className="w-full pl-14 pr-14 py-5 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium placeholder:text-slate-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-5 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <Eye size={20} />
+                  </button>
                 </div>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••" 
-                  className="w-full px-6 py-4 rounded-xl bg-[rgba(238,241,243,0.5)] border-none focus:ring-2 focus:ring-stitch-primary-container/30 focus:bg-white transition-all duration-200 outline-none text-stitch-on-surface placeholder:text-slate-400" 
-                />
+                <div className="text-right px-1">
+                  <a href="#" className="text-sm font-bold text-slate-400 hover:text-blue-500 transition-colors">Forgot Password?</a>
+                </div>
               </div>
 
               {error && (
-                <div className="p-3 rounded-lg text-sm border border-red-200 bg-red-50 text-red-700">
+                <div className="p-4 rounded-2xl text-sm border border-red-100 bg-red-50 text-red-600 font-semibold animate-shake">
                   {error}
                 </div>
               )}
 
-              <div className="pt-4">
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className="stitch-primary-gradient-btn w-full py-4 rounded-xl text-white font-bold text-lg shadow-[0_12px_24px_rgba(0,100,123,0.15)] hover:saturate-150 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:active:scale-100"
-                >
-                  {loading ? "Signing In..." : "Sign In"}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-5 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide"
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
             </form>
 
-            <div className="mt-8 flex items-center gap-4">
-              <div className="h-px flex-grow bg-slate-200"></div>
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 font-label">or continue with</span>
-              <div className="h-px flex-grow bg-slate-200"></div>
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase font-extrabold tracking-[0.2em] text-slate-300">
+                <span className="bg-white px-4">Or continue with</span>
+              </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-4">
-              <button 
-                type="button"
-                onClick={onGoogleLogin}
-                disabled={googleLoading}
-                className="flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl bg-[rgba(238,241,243,0.5)] hover:bg-[#dfe3e6] transition-colors duration-200 text-stitch-on-surface-variant font-medium text-sm disabled:opacity-70"
-              >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-                {googleLoading ? "Connecting..." : "Google"}
-              </button>
+            <button
+              type="button"
+              onClick={onGoogleLogin}
+              disabled={googleLoading}
+              className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors active:scale-[0.98] disabled:opacity-70"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+              <span>Google</span>
+            </button>
+
+            <div className="text-center pt-2">
+              <p className="text-slate-500 font-bold">
+                Don't have an account? 
+                <Link to="/signup" className="text-blue-600 hover:underline ml-2">Sign Up</Link>
+              </p>
             </div>
-          </div>
-          
-          <div className="mt-8 text-center">
-            <p className="text-stitch-on-surface-variant font-medium">
-              Don't have an account? 
-              <Link to="/signup" className="text-stitch-secondary font-bold hover:underline underline-offset-4 ml-2">Sign up</Link>
-            </p>
           </div>
         </div>
-      </main>
-
-
+      </div>
     </div>
   );
 }
