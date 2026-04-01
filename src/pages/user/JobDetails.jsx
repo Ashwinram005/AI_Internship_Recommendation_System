@@ -162,10 +162,9 @@ export default function JobDetails() {
          setCompareError("");
          setCompareResult(null);
          const allJobs = await getVisiblePostingsForCandidates();
-         let jobsToRank = allJobs;
-         if (!allJobs.find((j) => j.id === job.id)) {
-            jobsToRank = [...allJobs, { ...job, id: job.id }];
-         }
+         // Prioritize the current job by putting it at the front of the array
+         const otherJobs = allJobs.filter(j => j.id !== job.id);
+         const jobsToRank = [{ ...job, id: job.id }, ...otherJobs];
 
          const results = await rankJobsForResume({ resume, jobs: jobsToRank });
          if (!results || results.length === 0) {
