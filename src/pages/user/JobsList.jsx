@@ -262,8 +262,12 @@ export default function JobsList() {
                 {(() => {
                   return (
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-hover)] text-white rounded-xl shadow-sm flex items-center justify-center">
-                        <WalletCards size={20} />
+                      <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-hover)] text-white rounded-xl shadow-sm flex items-center justify-center font-bold text-lg tracking-wider">
+                        {job.company
+                          ? job.company.trim().split(/\s+/).length >= 2
+                            ? (job.company.trim().split(/\s+/)[0][0] + job.company.trim().split(/\s+/)[1][0]).toUpperCase()
+                            : job.company.substring(0, 2).toUpperCase()
+                          : "UC"}
                       </div>
 
                       <div className="flex-1 min-w-0">
