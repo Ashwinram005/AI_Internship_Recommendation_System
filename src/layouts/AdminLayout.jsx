@@ -56,6 +56,20 @@ export default function AdminLayout() {
         onClose={() => setMobileOpen(false)}
       />
       <div className="flex-1 flex flex-col min-w-0 relative z-10 lg:pl-[286px]">
+        {/* Mobile Header */}
+        <header className="lg:hidden flex items-center justify-between p-4 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20">
+          <div className="font-bold text-lg tracking-tight font-headline">
+            System<span className="text-[var(--color-primary)]">Admin</span>
+          </div>
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+        </header>
+
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <Outlet />
         </main>

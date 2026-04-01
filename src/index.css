@@ -229,7 +229,7 @@
   .saas-table-container {
     border: none;
     border-radius: 16px;
-    overflow: hidden;
+    overflow-x: auto;
     background: var(--color-surface);
     box-shadow: var(--shadow-card);
   }
