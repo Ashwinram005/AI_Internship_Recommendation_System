@@ -250,84 +250,108 @@ export default function JobDetails() {
             </div>
          )}
 
-         <div className="glass-card p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-5">
-               <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wide">
-                     <span className="bg-slate-100 px-2 py-0.5 rounded">
-                        {job.type || "internship"}
-                     </span>
-                     <span className="bg-slate-100 px-2 py-0.5 rounded">
-                        {job.experienceLevel || "Junior"}
-                     </span>
-                     <span>Job Board Listing</span>
-                  </div>
-                  <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mt-2 font-[Poppins]">
-                     {job.title}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-slate-600">
-                     <span className="inline-flex items-center gap-1.5">
-                        <Building2 size={14} /> {job.company || "Unknown Company"}
-                     </span>
-                     <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={14} /> {job.location || "Global"} ({job.workSetting || "Remote"})
-                     </span>
-                     {job.salaryRange && (
-                        <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
-                           <WalletCards size={14} /> {job.salaryRange}
-                        </span>
-                     )}
-                     <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays size={14} /> Apply by {deadlineLabel}
-                     </span>
-                  </div>
-               </div>
+         {/* ── HERO HEADER CARD ── */}
+         <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.07)] overflow-hidden border border-slate-100">
+            {/* Gradient accent bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
 
-               <div className="flex flex-col items-start md:items-end gap-3 min-w-0 md:min-w-[280px]">
-                  <div className="flex flex-col items-start md:items-end gap-2">
-                     <span
-                        className={`saas-badge ${job.status === "active" ? "badge-success" : "badge-warning"}`}
-                     >
-                        {job.status === "active"
-                           ? "Open for Applications"
-                           : job.status === "hold"
-                             ? "On Hold: Not accepting new applications"
-                             : "Applications Closed"}
-                     </span>
-                     <div className="flex flex-wrap gap-2">
-                        <button
-                           onClick={() => {
-                              setShowComparePanel((v) => !v);
-                              if (!showComparePanel) {
-                                 setCompareResult(null);
-                                 setCompareError("");
-                              }
-                           }}
-                           className={`saas-btn ${showComparePanel ? "bg-slate-100 text-slate-700" : "bg-blue-600 text-white hover:bg-blue-700"} text-xs py-1.5`}
+            <div className="p-6 md:p-8">
+               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                  {/* Left: title + meta */}
+                  <div className="min-w-0 flex-1">
+                     <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                           {job.type || "Internship"}
+                        </span>
+                        <span className="bg-violet-50 text-violet-700 border border-violet-200 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                           {job.experienceLevel || "Junior"}
+                        </span>
+                        <span
+                           className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                              job.status === "active"
+                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                 : "bg-amber-50 text-amber-700 border-amber-200"
+                           }`}
                         >
-                           <Sparkles size={14} />
-                           {showComparePanel ? "Close Compare" : "Compare Resume"}
-                        </button>
-                        {appliedJobIds.has(job.id) ? (
-                           <span className="saas-badge badge-info">Already Applied</span>
-                        ) : (
-                           <button
-                              onClick={openApplyModal}
-                              disabled={!canApply}
-                              className="saas-btn saas-btn-primary disabled:opacity-50 text-xs py-1.5"
-                           >
-                              Apply Now
-                              <ArrowUpRight size={14} />
-                           </button>
+                           {job.status === "active" ? "● Open" : "● On Hold"}
+                        </span>
+                     </div>
+
+                     <h1 className="text-2xl md:text-[1.75rem] font-bold text-slate-900 tracking-tight font-[Poppins] leading-snug">
+                        {job.title}
+                     </h1>
+
+                     <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-sm text-slate-500">
+                        <span className="inline-flex items-center gap-1.5">
+                           <Building2 size={14} className="text-slate-400" />
+                           <span className="font-medium text-slate-700">{job.company || "Unknown Company"}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                           <MapPin size={14} className="text-slate-400" />
+                           {job.location || "Global"} · {job.workSetting || "Remote"}
+                        </span>
+                        {job.salaryRange && (
+                           <span className="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
+                              <WalletCards size={14} />
+                              {job.salaryRange}
+                           </span>
                         )}
+                        <span className="inline-flex items-center gap-1.5">
+                           <CalendarDays size={14} className="text-slate-400" />
+                           Closes {deadlineLabel}
+                        </span>
                      </div>
                   </div>
 
-                  {/* Inline Compare controls */}
-                  {showComparePanel && (
-                     <div className="w-full mt-2 p-4 rounded-xl bg-slate-50/50 border border-slate-200/60 transition-all animate-in fade-in slide-in-from-top-2">
+                  {/* Right: actions */}
+                  <div className="flex flex-col gap-3 min-w-[220px]">
+                     <button
+                        onClick={() => {
+                           setShowComparePanel((v) => !v);
+                           if (!showComparePanel) {
+                              setCompareResult(null);
+                              setCompareError("");
+                           }
+                        }}
+                        className={`saas-btn text-sm py-2 ${showComparePanel ? "bg-slate-100 text-slate-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                     >
+                        <Sparkles size={14} />
+                        {showComparePanel ? "Close Compare" : "Compare Resume"}
+                     </button>
+                     {appliedJobIds.has(job.id) ? (
+                        <span className="saas-badge badge-info justify-center py-2 text-xs">✓ Already Applied</span>
+                     ) : (
+                        <button
+                           onClick={openApplyModal}
+                           disabled={!canApply}
+                           className="saas-btn saas-btn-primary disabled:opacity-50 text-sm py-2 inline-flex items-center gap-1.5 justify-center"
+                        >
+                           Apply Now
+                           <ArrowUpRight size={14} />
+                        </button>
+                     )}
+
+                     {/* Company website link */}
+                     {job.companyWebsite && (
+                        <a
+                           href={job.companyWebsite}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="saas-btn saas-btn-secondary text-xs py-1.5 inline-flex items-center gap-1.5 justify-center"
+                        >
+                           <Globe size={12} /> Visit Company Site
+                        </a>
+                     )}
+                  </div>
+               </div>
+
+               {/* Compare Panel */}
+               {showComparePanel && (
+                  <div className="mt-6 pt-5 border-t border-slate-100">
+                     <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 transition-all animate-in fade-in slide-in-from-top-2">
                         {!compareResult && !comparing ? (
                            <div className="space-y-3">
+                              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">AI Resume Compatibility</p>
                               <div className="relative">
                                  <FileText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                  <select
@@ -380,10 +404,9 @@ export default function JobDetails() {
                                     </p>
                                  </div>
                               </div>
-
-                              <div className="space-y-2.5">
-                                 <div>
-                                    <p className="text-[10px] font-bold text-emerald-700 uppercase mb-1">Matched Skills</p>
+                              <div className="grid grid-cols-2 gap-3">
+                                 <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-2.5">
+                                    <p className="text-[10px] font-bold text-emerald-700 uppercase mb-1.5">✓ Matched Skills</p>
                                     <div className="flex flex-wrap gap-1">
                                        {compareResult.matchedSkills?.length > 0 ? (
                                           compareResult.matchedSkills.slice(0, 6).map((s, i) => (
@@ -396,8 +419,8 @@ export default function JobDetails() {
                                        )}
                                     </div>
                                  </div>
-                                 <div>
-                                    <p className="text-[10px] font-bold text-rose-700 uppercase mb-1">Missing Skills</p>
+                                 <div className="bg-rose-50/60 border border-rose-100 rounded-lg p-2.5">
+                                    <p className="text-[10px] font-bold text-rose-700 uppercase mb-1.5">✗ Missing Skills</p>
                                     <div className="flex flex-wrap gap-1">
                                        {compareResult.missingSkills?.length > 0 ? (
                                           compareResult.missingSkills.slice(0, 6).map((s, i) => (
@@ -420,82 +443,88 @@ export default function JobDetails() {
                            </div>
                         )}
                      </div>
-                  )}
-               </div>
+                  </div>
+               )}
             </div>
          </div>
 
+         {/* ── TWO-COLUMN CONTENT ── */}
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="glass-card p-6 lg:col-span-2 space-y-4">
-               <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
-                     Role Description
-                  </h2>
-                  <p className="text-sm text-slate-500 mt-1">
-                     Complete details for this position.
+
+            {/* DESCRIPTION CARD */}
+            <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden">
+               {/* Section header with left accent bar */}
+               <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+                  <div className="w-1 h-5 rounded-full bg-blue-500" />
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Role Description</h2>
+               </div>
+               <div className="p-6 md:p-8">
+                  <p className="text-sm text-slate-600 whitespace-pre-line leading-relaxed">
+                     {job.description || "No description provided by company."}
                   </p>
                </div>
-               <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
-                  {job.description || "No description provided by company."}
-               </p>
             </div>
 
-            <div className="glass-card p-6 space-y-4">
-               <h3 className="text-lg font-semibold text-slate-900">Key Details</h3>
-               <div className="space-y-3 text-sm">
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                     <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Job Type
-                     </p>
-                     <p className="text-slate-700 font-medium mt-1 uppercase">
-                        {job.type || "job"}
-                     </p>
+            {/* KEY DETAILS SIDEBAR */}
+            <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden h-fit">
+               <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/60">
+                  <div className="w-1 h-5 rounded-full bg-indigo-500" />
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Key Details</h3>
+               </div>
+               <div className="p-5 space-y-0 divide-y divide-slate-100">
+
+                  {/* Job Type */}
+                  <div className="py-3 flex items-center justify-between">
+                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Job Type</p>
+                     <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full capitalize">
+                        {job.type || "Job"}
+                     </span>
                   </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                     <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Required Skills
-                     </p>
-                     <div className="flex flex-wrap gap-1.5 mt-2">
+
+                  {/* Experience Level */}
+                  <div className="py-3 flex items-center justify-between">
+                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Level</p>
+                     <span className="text-xs font-bold text-violet-700 bg-violet-50 border border-violet-200 px-2.5 py-1 rounded-full capitalize">
+                        {job.experienceLevel || "Junior"}
+                     </span>
+                  </div>
+
+                  {/* Work Setting */}
+                  <div className="py-3 flex items-center justify-between">
+                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Work Setting</p>
+                     <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full capitalize">
+                        {job.workSetting || "Remote"}
+                     </span>
+                  </div>
+
+                  {/* Industry */}
+                  <div className="py-3 flex items-center justify-between">
+                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Industry</p>
+                     <span className="text-xs font-medium text-slate-600 text-right max-w-[130px] truncate">
+                        {job.industry || "General / Tech"}
+                     </span>
+                  </div>
+
+                  {/* Required Skills */}
+                  <div className="py-4">
+                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2.5">Required Skills</p>
+                     <div className="flex flex-wrap gap-1.5">
                         {(job.skills || "")
                            .split(",")
                            .filter(Boolean)
                            .map((skill, idx) => (
                               <span
                                  key={`${skill}-${idx}`}
-                                 className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-flex items-center gap-1"
+                                 className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
                               >
-                                 <Sparkles size={10} />
+                                 <Sparkles size={9} />
                                  {skill.trim()}
                               </span>
                            ))}
                         {!job.skills && (
-                           <span className="text-slate-500">Not specified</span>
+                           <span className="text-xs text-slate-400 italic">Not specified</span>
                         )}
                      </div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                     <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Experience Level
-                     </p>
-                     <p className="text-slate-700 font-medium mt-1 capitalize">
-                        {job.experienceLevel || "Junior"}
-                     </p>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                     <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Industry / Category
-                     </p>
-                     <p className="text-slate-700 font-medium mt-1">
-                        {job.industry || "General / Tech"}
-                     </p>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                     <p className="text-slate-400 text-xs uppercase tracking-wide">
-                        Work Setting
-                     </p>
-                     <p className="text-slate-700 font-medium mt-1 capitalize">
-                        {job.workSetting || "Remote"}
-                     </p>
                   </div>
                </div>
             </div>
