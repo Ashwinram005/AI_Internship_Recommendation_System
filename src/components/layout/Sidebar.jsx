@@ -86,7 +86,7 @@ export default function Sidebar({
         })}
       </div>
 
-      {/* Voice control - only for job seekers */}
+      {/* Voice control - only for job seekers - Commented out as requested
       {user?.role === "user" && (
         <div className="px-2 my-4 space-y-2">
           <button
@@ -108,6 +108,7 @@ export default function Sidebar({
           )}
         </div>
       )}
+      */}
 
       {/* Logout */}
       <div className="pt-4 mt-4 border-t border-slate-100/50 px-2 space-y-3">
