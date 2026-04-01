@@ -76,7 +76,7 @@ export default function Login() {
       <div className="w-full max-w-4xl h-auto min-h-[500px] bg-white rounded-[2.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col lg:flex-row">
         
         {/* Left Panel: Onboarding (Blue) */}
-        <div className="lg:w-[40%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-8 flex flex-col items-center justify-center text-center text-white relative">
+        <div className="lg:w-[40%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-8 hidden lg:flex flex-col items-center justify-center text-center text-white relative">
           <div className="relative z-10 space-y-3">
             <h1 className="text-3xl font-bold tracking-tight font-headline">New Here?</h1>
             <p className="text-blue-50/80 text-base font-medium leading-relaxed max-w-xs mx-auto">

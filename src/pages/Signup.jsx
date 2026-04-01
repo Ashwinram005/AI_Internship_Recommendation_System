@@ -212,7 +212,7 @@ export default function Signup() {
       <div className="w-full max-w-5xl h-auto min-h-[650px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row-reverse">
         
         {/* Left/Right Panel: Onboarding (Blue) */}
-        <div className="lg:w-[35%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-10 flex flex-col items-center justify-center text-center text-white relative">
+        <div className="lg:w-[35%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-10 hidden lg:flex flex-col items-center justify-center text-center text-white relative">
           <div className="relative z-10 space-y-6">
             <h1 className="text-4xl font-bold tracking-tight font-headline">Already Here?</h1>
             <p className="text-blue-50/80 text-lg font-medium leading-relaxed max-w-xs mx-auto">
