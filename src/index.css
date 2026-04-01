@@ -86,8 +86,10 @@
   .sidebar-premium {
     width: 286px;
     height: 100vh;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    bottom: 0;
     flex-shrink: 0;
     border-right: none;
     background: rgba(255, 255, 255, 0.7);
@@ -97,6 +99,7 @@
     flex-direction: column;
     padding: 20px 16px;
     z-index: 60;
+    overflow-y: auto;
   }
 
   .glass-card {

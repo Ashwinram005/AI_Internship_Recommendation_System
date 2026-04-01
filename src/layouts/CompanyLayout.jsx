@@ -57,7 +57,7 @@ export default function CompanyLayout() {
         mobileOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10 lg:pl-[286px]">
         <header className="app-header">
           <div className="flex items-center gap-3 text-sm">
             <button
