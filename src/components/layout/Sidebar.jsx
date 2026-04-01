@@ -50,8 +50,8 @@ export default function Sidebar({
       {/* Brand */}
       <div className="px-2 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shrink-0 shadow-lg">
-            <BriefcaseBusiness size={18} className="text-white" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-lg">
+            <img src="/logo-main.png" alt="GetLanded" className="w-full h-full object-contain bg-white" />
           </div>
           <div className="min-w-0">
             <p className="text-base font-bold text-slate-900 truncate tracking-tight">

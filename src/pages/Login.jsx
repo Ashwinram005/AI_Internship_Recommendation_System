@@ -103,8 +103,8 @@ export default function Login() {
           <div className="w-full max-w-md mx-auto space-y-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Bird className="text-blue-600" size={18} />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden">
+                  <img src="/logo-main.png" alt="GetLanded Logo" className="w-full h-full object-contain" />
                 </div>
                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Welcome Back!</span>
               </div>

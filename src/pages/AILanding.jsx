@@ -6,8 +6,11 @@ export default function AILanding() {
       {/* TopNavBar */}
       <header className="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-xl shadow-sky-900/5">
         <nav className="flex justify-between items-center px-4 md:px-8 py-4 max-w-7xl mx-auto">
-            <div className="text-xl md:text-2xl font-bold tracking-tighter text-white font-headline">
-              GetLanded
+            <div className="flex items-center gap-3">
+              <img src="/logo-main.png" alt="Logo" className="w-8 h-8 object-contain" />
+              <div className="text-xl md:text-2xl font-bold tracking-tighter text-white font-headline">
+                GetLanded
+              </div>
             </div>
           <div className="hidden md:flex items-center gap-8 font-['Manrope'] tracking-tight">
             <Link className="text-sky-400 font-semibold hover:text-white hover:bg-white/5 transition-all px-3 py-1 rounded-lg" to="/">Home</Link>

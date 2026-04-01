@@ -239,8 +239,8 @@ export default function Signup() {
           <div className="w-full max-w-lg mx-auto space-y-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Bird className="text-blue-600" size={20} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden">
+                  <img src="/logo-main.png" alt="GetLanded Logo" className="w-full h-full object-contain" />
                 </div>
                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Join Us!</span>
               </div>
