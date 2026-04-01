@@ -447,16 +447,7 @@ export default function Signup() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="w-full py-8 border-t border-slate-200/50 bg-[#f5f7f9] relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center px-12 max-w-7xl mx-auto">
-          <p className="text-xs font-manrope tracking-wide text-slate-400">© 2024 GetLanded AI. All rights reserved.</p>
-          <div className="flex gap-8 mt-6 md:mt-0">
-            <Link to="/" className="text-xs font-manrope tracking-wide text-slate-400 hover:text-cyan-500 hover:underline decoration-cyan-500/30 underline-offset-4 transition-all duration-200">Privacy Policy</Link>
-            <Link to="/" className="text-xs font-manrope tracking-wide text-slate-400 hover:text-cyan-500 hover:underline decoration-cyan-500/30 underline-offset-4 transition-all duration-200">Terms of Service</Link>
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }

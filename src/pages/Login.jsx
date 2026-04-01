@@ -169,19 +169,7 @@ export default function Login() {
         </div>
       </main>
 
-      <footer className="w-full relative z-10 border-t border-slate-200/50">
-        <div className="flex flex-col md:flex-row justify-between items-center px-8 py-8 w-full max-w-7xl mx-auto gap-6 md:gap-0">
-          <div className="text-lg font-bold text-slate-900 font-headline">GetLanded</div>
-          <div className="flex gap-8">
-            <Link to="/" className="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label">Privacy Policy</Link>
-            <Link to="/" className="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label">Terms of Service</Link>
-            <Link to="/" className="text-slate-400 hover:text-slate-900 transition-opacity font-manrope text-xs uppercase tracking-widest font-label">Help Center</Link>
-          </div>
-          <div className="text-slate-400 font-manrope text-xs uppercase tracking-widest font-label text-center md:text-right">
-            © 2024 GetLanded. Built for the modern professional.
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }
