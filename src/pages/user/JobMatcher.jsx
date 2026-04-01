@@ -397,6 +397,16 @@ export default function JobMatcher() {
                             : "No explicit keyword overlap detected."}
                         </p>
                       </div>
+                      {job.missingSkills?.length > 0 && (
+                        <div className="md:col-span-3 bg-red-50 border border-red-100/50 shadow-sm rounded-lg px-4 py-3">
+                          <p className="text-red-600 uppercase tracking-wide text-[11px] font-bold">
+                            Missing Keywords
+                          </p>
+                          <p className="text-red-900 text-sm mt-1">
+                            {job.missingSkills.join(", ")}
+                          </p>
+                        </div>
+                      )}
                       <div className="md:col-span-3 bg-[var(--color-surface-alt)] border-transparent shadow-sm rounded-lg px-4 py-3">
                         <p className="text-slate-500 uppercase tracking-wide font-semibold">
                           Description
