@@ -407,6 +407,13 @@ export default function Signup() {
               <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
               <span>Google</span>
             </button>
+
+            <p className="text-center text-xs text-slate-500 mt-1">
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+                Sign In
+              </Link>
+            </p>
           </div>
         </div>
       </div>
