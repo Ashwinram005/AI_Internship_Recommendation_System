@@ -208,20 +208,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-4 md:p-8 font-body">
-      <div className="w-full max-w-6xl h-auto min-h-[800px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row-reverse">
+    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-2 md:p-4 font-body">
+      <div className="w-full max-w-5xl h-auto min-h-[550px] bg-white rounded-[2.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col lg:flex-row-reverse">
         
         {/* Left/Right Panel: Onboarding (Blue) */}
-        <div className="lg:w-[40%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-12 flex flex-col items-center justify-center text-center text-white relative">
-          <div className="relative z-10 space-y-8">
-            <h1 className="text-5xl font-bold tracking-tight font-headline">Already Here?</h1>
-            <p className="text-blue-50/80 text-xl font-medium leading-relaxed max-w-xs mx-auto">
+        <div className="lg:w-[30%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-8 flex flex-col items-center justify-center text-center text-white relative">
+          <div className="relative z-10 space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight font-headline">Already Here?</h1>
+            <p className="text-blue-50/80 text-sm font-medium leading-relaxed max-w-xs mx-auto">
               Sign in and continue your journey with us!
             </p>
-            <div className="pt-4">
+            <div className="pt-2">
               <Link 
                 to="/login"
-                className="inline-block px-12 py-4 border-2 border-white/40 rounded-full font-bold text-lg hover:bg-white/10 transition-all active:scale-[0.98]"
+                className="inline-block px-10 py-3 border-2 border-white/40 rounded-full font-bold text-base hover:bg-white/10 transition-all active:scale-[0.98]"
               >
                 SIGN IN
               </Link>
@@ -235,93 +235,93 @@ export default function Signup() {
         </div>
 
         {/* Form Panel (White) */}
-        <div className="lg:w-[60%] p-8 md:p-12 flex flex-col justify-center bg-white overflow-y-auto max-h-screen lg:max-h-none">
+        <div className="lg:w-[70%] p-4 flex flex-col justify-center bg-white overflow-y-auto max-h-screen lg:max-h-none">
           <div className="w-full max-w-lg mx-auto space-y-6">
-            <div className="space-y-3">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Bird className="text-blue-600" size={24} />
+                <div className="w-7 h-7 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Bird className="text-blue-600" size={16} />
                 </div>
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">Join Us!</span>
+                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Join Us!</span>
               </div>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight font-headline">Create Account</h2>
-              <p className="text-slate-500 font-medium">
-                Choose your role and start your professional journey today.
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight font-headline">Create Account</h2>
+              <p className="text-slate-500 text-[11px] font-medium leading-none">
+                Choose your role and start your journey today.
               </p>
             </div>
 
             <form onSubmit={onEmailSignup} className="space-y-4">
               {/* Account Type Toggle */}
-              <div className="bg-[#f0f4f8] p-1.5 rounded-full flex gap-1 items-center mb-4">
+              <div className="bg-[#f0f4f8] p-1 rounded-full flex gap-1 items-center mb-1">
                 <button 
                   type="button"
                   onClick={() => setRole("user")}
-                  className={`flex-1 py-3 px-6 rounded-full text-sm font-black transition-all ${role === 'user' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${role === 'user' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Candidate
                 </button>
                 <button 
                   type="button"
                   onClick={() => setRole("company")}
-                  className={`flex-1 py-3 px-6 rounded-full text-sm font-black transition-all ${role === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${role === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Employer
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="relative flex items-center group">
-                  <User className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                  <User className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                     placeholder={role === 'company' ? "Company Name" : "Full Name"}
-                    className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
                   />
                 </div>
                 <div className="relative flex items-center group">
-                  <Mail className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                  <Mail className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="Email Address"
-                    className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
                   />
                 </div>
               </div>
 
               <div className="relative flex items-center group">
-                <Lock className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                <Lock className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Password"
-                  className="w-full pl-12 pr-12 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                  className="w-full pl-10 pr-12 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 text-slate-400 hover:text-slate-600 focus:outline-none"
                 >
-                  <Eye size={20} />
+                  <Eye size={18} />
                 </button>
               </div>
 
               {role === "company" && (
-                <div className="space-y-4 pt-4 border-t border-slate-100 mt-4 animate-in fade-in slide-in-from-top-2">
-                   <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 pt-2 border-t border-slate-100 mt-1 animate-in fade-in slide-in-from-top-1">
+                   <div className="grid grid-cols-2 gap-2">
                       <div className="relative flex items-center group">
-                        <Building2 className="absolute left-4 text-slate-400" size={18} />
+                        <Building2 className="absolute left-4 text-slate-400" size={14} />
                         <select
                           value={industry}
                           onChange={(e) => setIndustry(e.target.value)}
-                          className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-sm"
+                          className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-[10px]"
                         >
                           <option value="">Industry...</option>
                           <option value="Tech">Technology</option>
@@ -332,7 +332,7 @@ export default function Signup() {
                       <select
                         value={companySize}
                         onChange={(e) => setCompanySize(e.target.value)}
-                        className="w-full px-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-sm"
+                        className="w-full px-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-[10px]"
                       >
                         <option value="">Size...</option>
                         <option value="1-10">1-10</option>
@@ -340,34 +340,34 @@ export default function Signup() {
                       </select>
                    </div>
                    <div className="relative flex items-center group">
-                     <Globe className="absolute left-4 text-slate-400" size={18} />
+                     <Globe className="absolute left-4 text-slate-400" size={14} />
                      <input 
                        type="url"
                        value={website}
                        onChange={(e) => setWebsite(e.target.value)}
                        placeholder="Website URL"
-                       className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                       className="w-full pl-9 pr-4 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
                      />
                    </div>
-                   <div className="grid grid-cols-2 gap-4">
+                   <div className="grid grid-cols-2 gap-2">
                     <div className="relative flex items-center group">
-                      <MapPin className="absolute left-4 text-slate-400" size={18} />
+                      <MapPin className="absolute left-4 text-slate-400" size={14} />
                       <input 
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="Location"
-                        className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                        className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
                       />
                     </div>
                     <div className="relative flex items-center group">
-                      <Tag className="absolute left-4 text-slate-400" size={18} />
+                      <Tag className="absolute left-4 text-slate-400" size={14} />
                       <input 
                         type="text"
                         value={tagline}
                         onChange={(e) => setTagline(e.target.value)}
                         placeholder="Tagline"
-                        className="w-full pl-12 pr-4 py-4 bg-[#f0f4f8] border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium"
+                        className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
                       />
                     </div>
                    </div>
@@ -383,17 +383,17 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-5 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide mt-4"
+                className="w-full py-2.5 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-xl font-black text-sm shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide mt-1"
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {loading ? "Creating..." : "Create Account"}
               </button>
             </form>
 
-            <div className="relative p-2">
+            <div className="relative py-1">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-100"></div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase font-extrabold tracking-[0.2em] text-slate-300">
+              <div className="relative flex justify-center text-[10px] uppercase font-extrabold tracking-[0.2em] text-slate-300">
                 <span className="bg-white px-4">Or sign up with</span>
               </div>
             </div>
@@ -402,9 +402,9 @@ export default function Signup() {
               type="button"
               onClick={onGoogleSignup}
               disabled={googleLoading}
-              className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors active:scale-[0.98] disabled:opacity-70"
+              className="w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-3 transition-colors active:scale-[0.98] disabled:opacity-70 text-xs"
             >
-              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
               <span>Google</span>
             </button>
           </div>
