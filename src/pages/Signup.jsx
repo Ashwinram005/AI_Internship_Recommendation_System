@@ -208,14 +208,14 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-2 md:p-4 font-body">
-      <div className="w-full max-w-5xl h-auto min-h-[550px] bg-white rounded-[2.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col lg:flex-row-reverse">
+    <div className="min-h-screen bg-[#f8f9fd] flex items-center justify-center p-4 md:p-6 font-body">
+      <div className="w-full max-w-5xl h-auto min-h-[650px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col lg:flex-row-reverse">
         
         {/* Left/Right Panel: Onboarding (Blue) */}
-        <div className="lg:w-[30%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-8 flex flex-col items-center justify-center text-center text-white relative">
-          <div className="relative z-10 space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight font-headline">Already Here?</h1>
-            <p className="text-blue-50/80 text-sm font-medium leading-relaxed max-w-xs mx-auto">
+        <div className="lg:w-[35%] bg-gradient-to-br from-[#0066ff] to-[#004dc2] p-10 flex flex-col items-center justify-center text-center text-white relative">
+          <div className="relative z-10 space-y-6">
+            <h1 className="text-4xl font-bold tracking-tight font-headline">Already Here?</h1>
+            <p className="text-blue-50/80 text-lg font-medium leading-relaxed max-w-xs mx-auto">
               Sign in and continue your journey with us!
             </p>
             <div className="pt-2">
@@ -235,35 +235,35 @@ export default function Signup() {
         </div>
 
         {/* Form Panel (White) */}
-        <div className="lg:w-[70%] p-4 flex flex-col justify-center bg-white overflow-y-auto max-h-screen lg:max-h-none">
+        <div className="lg:w-[65%] p-6 md:p-10 flex flex-col justify-center bg-white overflow-y-auto max-h-screen lg:max-h-none">
           <div className="w-full max-w-lg mx-auto space-y-6">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Bird className="text-blue-600" size={16} />
+                <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Bird className="text-blue-600" size={20} />
                 </div>
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Join Us!</span>
+                <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Join Us!</span>
               </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight font-headline">Create Account</h2>
-              <p className="text-slate-500 text-[11px] font-medium leading-none">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight font-headline">Create Account</h2>
+              <p className="text-slate-500 text-sm font-medium">
                 Choose your role and start your journey today.
               </p>
             </div>
 
             <form onSubmit={onEmailSignup} className="space-y-4">
               {/* Account Type Toggle */}
-              <div className="bg-[#f0f4f8] p-1 rounded-full flex gap-1 items-center mb-1">
+              <div className="bg-[#f0f4f8] p-1.5 rounded-full flex gap-1 items-center mb-4">
                 <button 
                   type="button"
                   onClick={() => setRole("user")}
-                  className={`flex-1 py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${role === 'user' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 py-2.5 px-4 rounded-full text-xs font-black transition-all ${role === 'user' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Candidate
                 </button>
                 <button 
                   type="button"
                   onClick={() => setRole("company")}
-                  className={`flex-1 py-1.5 px-3 rounded-full text-[10px] font-black transition-all ${role === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 py-2.5 px-4 rounded-full text-xs font-black transition-all ${role === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Employer
                 </button>
@@ -271,38 +271,38 @@ export default function Signup() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="relative flex items-center group">
-                  <User className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
+                  <User className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={16} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
                     placeholder={role === 'company' ? "Company Name" : "Full Name"}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
+                    className="w-full pl-10 pr-4 py-3.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                   />
                 </div>
                 <div className="relative flex items-center group">
-                  <Mail className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
+                  <Mail className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={16} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="Email Address"
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
+                    className="w-full pl-10 pr-4 py-3.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                   />
                 </div>
               </div>
 
               <div className="relative flex items-center group">
-                <Lock className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={14} />
+                <Lock className="absolute left-4 text-slate-400 group-focus-within:text-blue-500" size={16} />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Password"
-                  className="w-full pl-10 pr-12 py-2.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-xs"
+                  className="w-full pl-10 pr-12 py-3.5 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                 />
                 <button
                   type="button"
@@ -314,14 +314,14 @@ export default function Signup() {
               </div>
 
               {role === "company" && (
-                <div className="space-y-2 pt-2 border-t border-slate-100 mt-1 animate-in fade-in slide-in-from-top-1">
-                   <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-4 pt-4 border-t border-slate-100 mt-2 animate-in fade-in slide-in-from-top-2">
+                   <div className="grid grid-cols-2 gap-4">
                       <div className="relative flex items-center group">
-                        <Building2 className="absolute left-4 text-slate-400" size={14} />
+                        <Building2 className="absolute left-4 text-slate-400" size={16} />
                         <select
                           value={industry}
                           onChange={(e) => setIndustry(e.target.value)}
-                          className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-[10px]"
+                          className="w-full pl-10 pr-4 py-3 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-xs"
                         >
                           <option value="">Industry...</option>
                           <option value="Tech">Technology</option>
@@ -332,7 +332,7 @@ export default function Signup() {
                       <select
                         value={companySize}
                         onChange={(e) => setCompanySize(e.target.value)}
-                        className="w-full px-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-[10px]"
+                        className="w-full px-4 py-3 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium appearance-none text-xs"
                       >
                         <option value="">Size...</option>
                         <option value="1-10">1-10</option>
@@ -340,34 +340,34 @@ export default function Signup() {
                       </select>
                    </div>
                    <div className="relative flex items-center group">
-                     <Globe className="absolute left-4 text-slate-400" size={14} />
+                     <Globe className="absolute left-4 text-slate-400" size={16} />
                      <input 
                        type="url"
                        value={website}
                        onChange={(e) => setWebsite(e.target.value)}
                        placeholder="Website URL"
-                       className="w-full pl-9 pr-4 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
+                       className="w-full pl-10 pr-4 py-3 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                      />
                    </div>
-                   <div className="grid grid-cols-2 gap-2">
+                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative flex items-center group">
-                      <MapPin className="absolute left-4 text-slate-400" size={14} />
+                      <MapPin className="absolute left-4 text-slate-400" size={16} />
                       <input 
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="Location"
-                        className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                       />
                     </div>
                     <div className="relative flex items-center group">
-                      <Tag className="absolute left-4 text-slate-400" size={14} />
+                      <Tag className="absolute left-4 text-slate-400" size={16} />
                       <input 
                         type="text"
                         value={tagline}
                         onChange={(e) => setTagline(e.target.value)}
                         placeholder="Tagline"
-                        className="w-full pl-9 pr-2 py-2 bg-[#f0f4f8] border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-[10px]"
+                        className="w-full pl-10 pr-4 py-3 bg-[#f0f4f8] border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all outline-none text-slate-700 font-medium text-sm"
                       />
                     </div>
                    </div>
@@ -383,9 +383,9 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-xl font-black text-sm shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide mt-1"
+                className="w-full py-4 bg-[#0066ff] hover:bg-[#0052cc] text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98] disabled:opacity-70 uppercase tracking-wide mt-2"
               >
-                {loading ? "Creating..." : "Create Account"}
+                {loading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
 
