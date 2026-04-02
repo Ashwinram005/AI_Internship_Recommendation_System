@@ -29,11 +29,15 @@ async def lifespan(app: FastAPI):
 
 
 def _parse_cors_origins() -> list[str]:
-    """Comma-separated origins, or * for any. Stripped; empty parts ignored."""
-    raw = (os.environ.get("CORS_ORIGINS") or "*").strip()
-    if raw == "*":
+    """Comma-separated origins, or * for any.
+    If CORS_ORIGINS is missing, empty, or only whitespace, allow all (*).
+    A typo like CORS_ORIGINS=' ' used to yield [] and **no** Access-Control-Allow-Origin (browser CORS error).
+    """
+    raw = os.environ.get("CORS_ORIGINS", "*").strip()
+    if not raw or raw == "*":
         return ["*"]
-    return [p.strip() for p in raw.split(",") if p.strip()]
+    out = [p.strip() for p in raw.split(",") if p.strip()]
+    return out if out else ["*"]
 
 
 # Browsers cannot use allow_credentials=True with allow_origins=["*"] (Starlette rejects it).
@@ -45,6 +49,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    max_age=600,
 )
 
 
