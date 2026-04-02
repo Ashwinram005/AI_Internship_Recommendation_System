@@ -119,8 +119,9 @@ Render sets **`PORT`**; `run_server.py` listens on **`0.0.0.0`** when `PORT` is 
 2. Add a **service** from that repo (or open the generated service) → **Settings**:
    - **Root Directory** → `server`  
      (so only `server/requirements.txt` and the Python app are built; avoids installing the whole Node monorepo as the app.)
-   - **Start Command** (if not auto): `python run_server.py`  
-     A **`server/Procfile`** with `web: python run_server.py` is included so Railway/Nixpacks can pick it up.
+   - **Build**: use the included **`server/Dockerfile`** (recommended). Railway will run `docker build` and install deps with `pip` from the official Python image.  
+     **Do not** set a manual **Build Command** like `pip install -r requirements.txt` unless you know the image has `pip` on `PATH` — Nixpacks sometimes fails with `sh: 1: pip: not found` (exit 127).
+   - **Start Command**: leave empty when using Docker (`CMD` in the Dockerfile runs `python run_server.py`). For Nixpacks-only deploys, use `python run_server.py` or the **`server/Procfile`** (`web: python run_server.py`).
 3. **Variables** (same idea as Render):
    - **`CORS_ORIGINS`** = your Vercel origin, e.g. `https://your-app.vercel.app`
    - Optional: **`HF_TOKEN`** if Hugging Face rate-limits downloads.
@@ -142,6 +143,7 @@ Railway injects **`PORT`**; `run_server.py` already binds to **`0.0.0.0`** when 
 | CORS errors when using a **full** `VITE_SKILL_EXTRACTOR_URL` | API blocks browser origin, or **`allow_credentials` + `*` origins** (invalid combo) | Default is `CORS_ORIGINS=*` with **credentials off** so any site (e.g. Vercel) can call the API. To **restrict** origins, set `CORS_ORIGINS` to your exact Vercel URL(s), comma-separated, no trailing slash. |
 | Production site never gets NER scores | Built without `VITE_SKILL_EXTRACTOR_URL` and users cannot reach `127.0.0.1:8765` | Set `VITE_SKILL_EXTRACTOR_URL` to your deployed API before `npm run build`. |
 | **`{"detail":"Not Found"}`** at the API **root** (`/`) | Older deploys had no route for `/` (only `/health` and `/api/...`). | Use **`GET /health`** for health checks; redeploy so **`GET /`** returns service metadata (see `skill_extractor_server.py`). |
+| Railway build: **`pip: not found`** / exit **127** | Custom build step runs `pip` before a Python toolchain is on `PATH`, or Nixpacks quirk | Use **`server/Dockerfile`** and clear manual **Build Command**; or use `python -m pip install -r requirements.txt` only after Python is provisioned. |
 
 ---
 
@@ -150,5 +152,6 @@ Railway injects **`PORT`**; `run_server.py` already binds to **`0.0.0.0`** when 
 - **`vite.config.js`** — `server.proxy` for `/skill-api`.
 - **`src/services/localNerService.js`** — `getSkillExtractorBaseUrl()` and `extractSkillModelBatch()`.
 - **`server/skill_extractor_server.py`** — FastAPI app, CORS, `/api/extract/batch`, `/health`.
+- **`server/Dockerfile`** — Railway/Docker build so `pip install` runs inside a Python image (avoids `pip: not found` on Nixpacks).
 
 Firebase (Auth + Firestore) remains separate: configured via `VITE_FIREBASE_*` in `.env` and `src/firebase.js`. The skill extractor does **not** replace Firebase; it only enriches matching scores in the browser.
