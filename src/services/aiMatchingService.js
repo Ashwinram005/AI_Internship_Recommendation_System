@@ -1,5 +1,12 @@
 import { convertDocToHtml, convertPdfToText, inferResumeMimeType, isDocResume, isPdfResume } from "../utils/resumePreview";
 import OpenAI from "openai";
+import {
+  buildJobBlob,
+  buildResumeBlob,
+  extractSkillModelBatch,
+  scoreFromExtracts,
+  scoreLexicalOnly,
+} from "./localNerService";
 
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 const MAX_JOBS_PER_REQUEST = 20;
@@ -15,12 +22,6 @@ const stripDataUrlBase64 = (dataUrl = "") => {
 };
 
 const extractTextFromHtml = (html = "") => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-const tokenize = (value = "") =>
-  normalizeText(value)
-    .toLowerCase()
-    .split(/[^a-z0-9+#.]+/)
-    .filter((token) => token.length > 1);
 
 const unique = (values = []) => [...new Set(values.filter(Boolean))];
 
@@ -57,27 +58,6 @@ const getJobRequirementList = (job) => {
 
   return unique([...fromSkills, ...fromDescription]).slice(0, 20);
 };
-
-const hasRequirementMatch = (resumeTokens, requirement) => {
-  const tokens = tokenize(requirement);
-  if (!tokens.length) return false;
-
-  const overlap = tokens.filter((token) => resumeTokens.has(token)).length;
-  const ratio = overlap / tokens.length;
-
-  // Allow partial match for longer requirements from descriptions.
-  if (tokens.length >= 6) return ratio >= 0.4;
-  if (tokens.length >= 3) return ratio >= 0.5;
-  return ratio >= 1;
-};
-
-import { calculateLocalMatchScore } from "./localNerService";
-
-const localRankScore = ({ resumeText, job, profileSkills = [] }) => {
-  return calculateLocalMatchScore(resumeText, job, profileSkills);
-};
-
-// ... keep original tokenize/unique helpers if needed ...
 
 const getGroqClient = (apiKey) =>
   new OpenAI({
@@ -141,15 +121,30 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
   const resumeText = await extractResumePlainText(resume);
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
+  let nerByJobIndex = null;
+  try {
+    const batchTexts = [buildResumeBlob(resumeText, []), ...safeJobs.map(buildJobBlob)];
+    const extracted = await extractSkillModelBatch(batchTexts);
+    const resumeEx = extracted[0];
+    nerByJobIndex = safeJobs.map((job, i) =>
+      scoreFromExtracts(resumeEx, extracted[i + 1], resumeText, job, []),
+    );
+  } catch (err) {
+    console.warn("Skill extractor batch failed, using lexical local scores:", err);
+  }
+
   const fallback = safeJobs
-    .map((job) => {
-      const estimate = localRankScore({ resumeText, job });
+    .map((job, i) => {
+      const estimate = nerByJobIndex
+        ? nerByJobIndex[i]
+        : scoreLexicalOnly(resumeText, job, []);
       return {
         jobId: job.id,
         score: estimate.score,
         matchedSkills: estimate.matchedSkills,
         missingSkills: estimate.missingSkills,
         summary: estimate.summary,
+        confidence: estimate.confidence,
       };
     })
     .sort((a, b) => b.score - a.score);
@@ -208,7 +203,7 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
       }
       return {
         ...fbItem,
-        confidence: fbItem.confidence || 70 // Local default confidence
+        confidence: fbItem.confidence ?? 70,
       };
     }).sort((a, b) => b.score - a.score);
   } catch (err) {
@@ -228,25 +223,41 @@ export const rankCandidatesForJob = async ({ job, candidates }) => {
       ...candidate,
       resumeText: (await extractResumePlainText(candidate.resume)) || "",
       inlinePdf: getInlineResumeDataIfPdf(candidate.resume),
-      profileSkills: candidate.skills || []
+      profileSkills: candidate.skills || [],
     })),
   );
 
+  let nerByCandidateIndex = null;
+  try {
+    const resumeBlobs = candidateWithText.map((c) =>
+      buildResumeBlob(c.resumeText, c.profileSkills || []),
+    );
+    const batchTexts = [...resumeBlobs, buildJobBlob(job)];
+    const extracted = await extractSkillModelBatch(batchTexts);
+    const jobEx = extracted[resumeBlobs.length];
+    nerByCandidateIndex = candidateWithText.map((c, i) =>
+      scoreFromExtracts(extracted[i], jobEx, c.resumeText, job, c.profileSkills || []),
+    );
+  } catch (err) {
+    console.warn("Skill extractor batch failed for candidates, using lexical scores:", err);
+  }
+
   const fallback = candidateWithText
-    .map((candidate) => {
-      // If application count > 20, we use profileSkills to augment the score
-      const useProfileSkills = candidates.length > 20;
-      const estimate = localRankScore({ 
-        resumeText: candidate.resumeText, 
-        job, 
-        profileSkills: useProfileSkills ? candidate.profileSkills : [] 
-      });
+    .map((candidate, i) => {
+      const estimate = nerByCandidateIndex
+        ? nerByCandidateIndex[i]
+        : scoreLexicalOnly(
+            candidate.resumeText,
+            job,
+            candidate.profileSkills || [],
+          );
       return {
         applicationId: candidate.applicationId,
         score: estimate.score,
         matchedSkills: estimate.matchedSkills,
         missingSkills: estimate.missingSkills,
         summary: estimate.summary,
+        confidence: estimate.confidence,
       };
     })
     .sort((a, b) => b.score - a.score);

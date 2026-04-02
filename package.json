@@ -4,15 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n skill,vite -c cyan,magenta \"npm run skill-server\" \"vite\"",
+    "dev:vite": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "skill-server": "node scripts/free-skill-port.mjs && cd server && python run_server.py",
+    "seed:companies": "node scripts/seedDummyCompanies.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "axios": "^1.13.6",
-    "compromise": "^14.15.0",
     "firebase": "^12.10.0",
     "lucide-react": "^0.575.0",
     "mammoth": "^1.11.0",
@@ -31,6 +33,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "concurrently": "^9.2.0",
     "globals": "^16.5.0",
     "vite": "^7.3.1"
   }

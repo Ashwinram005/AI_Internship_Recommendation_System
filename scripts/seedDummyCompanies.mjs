@@ -17,6 +17,17 @@ import {
   setDoc,
 } from "firebase/firestore";
 
+/**
+ * Seed Firestore with dummy companies + jobs (tech + non-tech roles in roleCatalog).
+ * Re-runs append: each invocation gets a unique SEED_RUN_ID (or set SEED_RUN_ID) so
+ * company emails/slugs and seedBatchId do not collide with existing documents.
+ *
+ * Env: COMPANY_COUNT, COMPANY_COUNT_MIN, JOBS_PER_COMPANY, SEED_RUN_ID,
+ *      SEED_WRITER_EMAIL, SEED_WRITER_PASSWORD, SEED_CREATE_AUTH_USERS
+ *
+ * Run: npm run seed:companies
+ */
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
@@ -53,8 +64,15 @@ const firebaseConfig = {
   appId: env.VITE_FIREBASE_APP_ID,
 };
 
-const COMPANY_COUNT_MIN = 50;
+/** Lower bound defaults to 1 so you can append a small batch (set COMPANY_COUNT_MIN=50 for legacy “bulk only” behavior). */
+const COMPANY_COUNT_MIN = Number.parseInt(process.env.COMPANY_COUNT_MIN || "1", 10);
 const COMPANY_COUNT_MAX = 100;
+
+/** Unique per run so new companies/jobs append alongside existing Firestore data (stable inbox: set SEED_RUN_ID=mybatch). */
+const seedRunId = (process.env.SEED_RUN_ID || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`).replace(
+  /[^a-z0-9]/gi,
+  "",
+);
 
 const companyNamePrefixes = [
   "Lumen", "Byte", "Nexa", "Urban", "Verity", "Cloud", "Signal", "Prism", "Aster", "Civic",
@@ -73,7 +91,8 @@ const industryCatalog = [
   "SaaS", "AI Products", "Data Analytics", "Developer Tools", "Fintech", "HealthTech", "EdTech",
   "GovTech", "Cybersecurity", "Cloud Consulting", "Digital Commerce", "Enterprise Automation",
   "Workforce Intelligence", "HRTech", "MarTech", "Logistics Tech", "Climate Tech", "PropTech",
-  "InsurTech", "Retail Technology",
+  "InsurTech", "Retail Technology", "Professional Services", "Healthcare Administration", "Media",
+  "Hospitality", "Consumer Goods", "Non-profit", "Real Estate Services", "Industrial Operations",
 ];
 
 const recruiterHandles = [
@@ -91,7 +110,7 @@ const makeSlug = (input) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const generateCompanies = (count) => {
+const generateCompanies = (count, runId) => {
   const usedSlugs = new Set();
   const results = [];
 
@@ -110,11 +129,12 @@ const generateCompanies = (count) => {
 
     usedSlugs.add(slug);
     const displayName = `${baseName} ${["Tech", "Labs", "Systems", "Works", "Digital"][i % 5]}`;
+    const uniqueSlug = `${slug}-r${runId}`;
 
     results.push({
       name: displayName,
-      slug,
-      email: `${handle}.${slug}@smallco.dev`,
+      slug: uniqueSlug,
+      email: `${handle}.${uniqueSlug}@smallco.dev`,
       industry,
     });
   }
@@ -122,7 +142,7 @@ const generateCompanies = (count) => {
   return results;
 };
 
-const companies = generateCompanies(targetCompanyCount);
+const companies = generateCompanies(targetCompanyCount, seedRunId);
 
 const roleCatalog = [
   { baseTitle: "Frontend Engineer", type: "job", skills: "React, TypeScript, CSS Architecture, API Integration, Testing" },
@@ -147,6 +167,35 @@ const roleCatalog = [
   { baseTitle: "Campus Community Intern", type: "internship", skills: "Campus Outreach, Partnerships, Event Marketing, CRM, Storytelling" },
   { baseTitle: "Product Operations Intern", type: "internship", skills: "Ops Analytics, Documentation, Workflow Design, Communication, Tooling" },
   { baseTitle: "Recruiting Operations Intern", type: "internship", skills: "Candidate Coordination, ATS Management, Reporting, Stakeholder Support, Process Design" },
+  // Non-tech / business roles (HR, GTM, finance, operations — inlined for a single seed file)
+  { baseTitle: "HR Generalist", type: "job", category: "non-tech", skills: "Employee Relations, HRIS, Onboarding, Policy, Compliance, ER Case Management" },
+  { baseTitle: "HR Business Partner", type: "job", category: "non-tech", skills: "Workforce Planning, Coaching Managers, Change Management, Labor Awareness, HR Metrics" },
+  { baseTitle: "Talent Acquisition Specialist", type: "job", category: "non-tech", skills: "Full-Cycle Recruiting, Sourcing, Interview Design, ATS, Employer Branding" },
+  { baseTitle: "Payroll and Benefits Administrator", type: "job", category: "non-tech", skills: "Payroll Processing, Benefits Administration, Audits, Vendor Coordination, HRIS Data" },
+  { baseTitle: "Learning and Development Specialist", type: "job", category: "non-tech", skills: "Training Design, Facilitation, LMS, Needs Analysis, Program Evaluation" },
+  { baseTitle: "Office Manager", type: "job", category: "non-tech", skills: "Facilities Coordination, Vendor Management, Scheduling, Procurement, Front-Office Operations" },
+  { baseTitle: "Executive Assistant", type: "job", category: "non-tech", skills: "Calendar Management, Travel, Confidential Correspondence, Board Prep, Expense Reporting" },
+  { baseTitle: "Marketing Manager", type: "job", category: "non-tech", skills: "Campaign Strategy, Brand, Budgeting, Agency Management, Performance Reporting" },
+  { baseTitle: "Content Strategist", type: "job", category: "non-tech", skills: "Editorial Calendar, SEO Basics, Copy Direction, Analytics, Stakeholder Interviews" },
+  { baseTitle: "Social Media Specialist", type: "job", category: "non-tech", skills: "Community Management, Content Production, Paid Social, Analytics, Crisis Comms Awareness" },
+  { baseTitle: "Account Executive", type: "job", category: "non-tech", skills: "Pipeline Management, Discovery, Proposals, CRM Hygiene, Forecasting" },
+  { baseTitle: "Sales Development Representative", type: "job", category: "non-tech", skills: "Outbound Prospecting, Qualification, Sequencing, CRM, Objection Handling" },
+  { baseTitle: "Customer Success Manager", type: "job", category: "non-tech", skills: "Onboarding, QBRs, Renewals, Health Scoring, Cross-Functional Escalation" },
+  { baseTitle: "Financial Analyst", type: "job", category: "non-tech", skills: "FP&A, Modeling, Variance Analysis, Excel, Executive Reporting" },
+  { baseTitle: "Staff Accountant", type: "job", category: "non-tech", skills: "GL, Month-End Close, Reconciliations, GAAP Awareness, AP/AR Support" },
+  { baseTitle: "Operations Coordinator", type: "job", category: "non-tech", skills: "Process Documentation, Cross-Functional Projects, Reporting, Vendor Liaison, Inventory Basics" },
+  { baseTitle: "Supply Chain Analyst", type: "job", category: "non-tech", skills: "Demand Planning, Supplier Metrics, Logistics Coordination, Excel, ERP Data" },
+  { baseTitle: "Legal Assistant", type: "job", category: "non-tech", skills: "Contract Administration, Docketing, Research Support, Filing, Confidentiality" },
+  { baseTitle: "Corporate Communications Specialist", type: "job", category: "non-tech", skills: "Internal Comms, Press Support, Messaging, Stakeholder Alignment, Issues Management" },
+  { baseTitle: "Facilities Coordinator", type: "job", category: "non-tech", skills: "Workplace Safety, Access Systems, Maintenance Tickets, Vendor SLAs, Events Setup" },
+  { baseTitle: "Retail Store Manager", type: "job", category: "non-tech", skills: "Staff Scheduling, P&L Basics, Customer Experience, Inventory, Loss Prevention" },
+  { baseTitle: "Event Coordinator", type: "job", category: "non-tech", skills: "Vendor Sourcing, Run-of-Show, Budget Tracking, Registration, On-Site Logistics" },
+  { baseTitle: "Non-profit Program Coordinator", type: "job", category: "non-tech", skills: "Grant Reporting, Volunteer Management, Community Partnerships, Budget Tracking, Outreach" },
+  { baseTitle: "HR Intern", type: "internship", category: "non-tech", skills: "Scheduling, HRIS Data Entry, Employee Questions, Onboarding Support, Documentation" },
+  { baseTitle: "Marketing Intern", type: "internship", category: "non-tech", skills: "Content Drafting, Research, Social Scheduling, Analytics Basics, Team Collaboration" },
+  { baseTitle: "Finance Intern", type: "internship", category: "non-tech", skills: "Excel, Expense Audits, Reporting Support, Data Quality, Attention to Detail" },
+  { baseTitle: "Sales Intern", type: "internship", category: "non-tech", skills: "CRM Updates, Lead Research, Outreach Support, Call Notes, Pipeline Hygiene" },
+  { baseTitle: "Operations Intern", type: "internship", category: "non-tech", skills: "Process Tracking, Documentation, Meetings Support, Vendor Follow-ups, Reporting" },
 ];
 
 const futureDate = (daysFromNow) => {
@@ -212,12 +261,114 @@ const preferredPool = [
   "experience instrumenting metrics and dashboards",
 ];
 
+const nonTechOutcomes = [
+  "improve employee experience and people-program quality",
+  "strengthen pipeline visibility and forecast accuracy",
+  "reduce operational friction for internal teams",
+  "improve customer satisfaction and retention signals",
+  "raise brand consistency across channels and regions",
+  "tighten compliance and audit readiness",
+];
+
+const nonTechCollaborationGroups = [
+  "finance and accounting partners",
+  "HR business partners and managers",
+  "sales leadership and revenue operations",
+  "marketing and communications teams",
+  "legal and corporate affairs",
+  "facilities and workplace services",
+];
+
+const nonTechBenefitLines = [
+  "mentorship and structured learning in a people-first culture",
+  "clear goals with regular coaching and feedback",
+  "exposure to cross-functional initiatives and senior leaders",
+  "tools and systems that reduce administrative busywork",
+  "flexible arrangements where the role allows",
+];
+
+const nonTechSpecializationTags = [
+  "People Programs",
+  "Go-To-Market",
+  "Finance Operations",
+  "Workplace Experience",
+  "Customer Lifecycle",
+  "Brand and Communications",
+];
+
+const nonTechResponsibilityPool = [
+  "own day-to-day execution with strong attention to detail and deadlines",
+  "build trusted relationships with stakeholders and external partners",
+  "maintain accurate records, trackers, and operational documentation",
+  "surface insights from data and qualitative signals to guide decisions",
+  "coordinate cross-functional workflows and follow-ups",
+  "represent the team professionally in meetings and written communication",
+];
+
+const nonTechRequiredPool = [
+  "clear written and verbal communication",
+  "organized approach to multi-tasking and prioritization",
+  "comfort with spreadsheets, ticketing systems, or CRM tools as relevant",
+  "sound judgment on confidential or sensitive information",
+  "collaborative mindset with remote and in-person stakeholders",
+];
+
+const nonTechPreferredPool = [
+  "prior experience in a similar industry or function",
+  "familiarity with modern workplace and people tools",
+  "experience supporting executives or large programs",
+  "bilingual or regional market experience",
+  "background in regulated or audited environments",
+];
+
 const pick = (items, seed) => items[seed % items.length];
 
 const enrichTemplateDescription = ({ template, company, companyIndex, slotIndex }) => {
   const seed = companyIndex * 17 + slotIndex * 13;
   const level = pick(levels, seed);
   const mode = pick(workModes, seed + 2);
+
+  if (template.category === "non-tech") {
+    const outcome = pick(nonTechOutcomes, seed + 5);
+    const collaboration = pick(nonTechCollaborationGroups, seed + 8);
+    const benefit = pick(nonTechBenefitLines, seed + 11);
+    const specialization = pick(nonTechSpecializationTags, seed + 3);
+    const responsibilityA = pick(nonTechResponsibilityPool, seed + 17);
+    const responsibilityB = pick(nonTechResponsibilityPool, seed + 19);
+    const requiredA = pick(nonTechRequiredPool, seed + 23);
+    const requiredB = pick(nonTechRequiredPool, seed + 29);
+    const preferredA = pick(nonTechPreferredPool, seed + 31);
+    const preferredB = pick(nonTechPreferredPool, seed + 37);
+    const uniqueCompanyContext =
+      template.type === "internship"
+        ? `${company.name} is growing early-career programs in ${company.industry}.`
+        : `${company.name} is scaling business and operations in ${company.industry}.`;
+
+    return [
+      `Join ${company.name} as a ${template.title} with focus on ${specialization}.`,
+      "",
+      "Responsibilities:",
+      `- ${responsibilityA}.`,
+      `- ${responsibilityB}.`,
+      `- Help the team ${outcome}.`,
+      "",
+      "Required:",
+      `- ${requiredA}.`,
+      `- ${requiredB}.`,
+      `- Core strengths in: ${template.skills}.`,
+      "",
+      "Preferred:",
+      `- ${preferredA}.`,
+      `- ${preferredB}.`,
+      "",
+      `Role Level: ${level}`,
+      `Work Mode: ${mode}`,
+      `Collaboration: Partner closely with ${collaboration}.`,
+      `Company Context: ${uniqueCompanyContext}`,
+      `Why Join: ${benefit}.`,
+    ].join("\n");
+  }
+
   const outcome = pick(outcomes, seed + 5);
   const collaboration = pick(collaborationGroups, seed + 8);
   const benefit = pick(benefitLines, seed + 11);
@@ -270,7 +421,8 @@ const buildJobsForCompany = (companyIndex) => {
   for (let i = 0; i < safeJobsPerCompany; i += 1) {
     const template = roleCatalog[(companyIndex * 11 + i * 7) % roleCatalog.length];
     const levelPrefix = pick(levels, companyIndex + i * 3);
-    const specialization = pick(specializationTags, companyIndex * 2 + i * 5);
+    const tagPool = template.category === "non-tech" ? nonTechSpecializationTags : specializationTags;
+    const specialization = pick(tagPool, companyIndex * 2 + i * 5);
     const roleLabel = template.type === "internship" ? "Internship" : "Role";
     const enrichedTitle =
       template.type === "internship"
@@ -330,7 +482,7 @@ const run = async () => {
     // The script can still proceed if individual company auth creation/sign-in works.
   }
 
-  const seedBatchId = `company_seed_${new Date().toISOString().replace(/[:.]/g, "-")}`;
+  const seedBatchId = `company_seed_${seedRunId}_${new Date().toISOString().replace(/[:.]/g, "-")}`;
   const credentialRows = [];
 
   for (let i = 0; i < companies.length; i += 1) {
@@ -371,7 +523,7 @@ const run = async () => {
           email: company.email,
           industry: company.industry,
           website: `https://${company.slug}.smallco.dev`,
-          about: `${company.name} is a growth-stage ${company.industry} company hiring for product and engineering teams.`,
+          about: `${company.name} is a growth-stage ${company.industry} company hiring across technology, business operations, and corporate functions.`,
           photoURL: "",
           seedBatchId,
           authStatus,
@@ -439,7 +591,7 @@ const run = async () => {
 
   await deleteApp(app);
 
-  console.log(`Seed completed. Companies ready: ${credentialRows.length}`);
+  console.log(`Seed completed. Run id: ${seedRunId}. Companies created: ${credentialRows.length}`);
   console.log(`Credentials file: ${credentialsOutputPath}`);
 };
 

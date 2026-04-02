@@ -1,168 +1,297 @@
-import nlp from "compromise";
-
-// Custom dictionary for technical skills extraction
-const TECH_SKILLS = [
-  "javascript", "js", "typescript", "ts", "react", "next.js", "vue", "angular", "node.js", "node",
-  "express", "python", "java", "c++", "c#", "golang", "rust", "php", "laravel", "ruby", "rails",
-  "sql", "postgresql", "mysql", "mongodb", "redis", "firebase", "aws", "azure", "gcp", "docker",
-  "kubernetes", "k8s", "git", "github", "ci/cd", "rest api", "graphql", "tailwind", "css", "html",
-  "ui/ux", "figma", "machine learning", "ai", "deep learning", "nlp", "pytorch", "tensorflow",
-  "data science", "tableau", "powerbi", "excel", "agile", "scrum", "project management"
-];
-
-const JOB_TITLES = [
-  "software engineer", "developer", "full stack", "frontend", "backend", "data scientist",
-  "product manager", "project manager", "designer", "devops", "cloud architect", "intern",
-  "analyst", "qa", "tester"
-];
-
-// Extend compromise with our custom skills
-const doc = nlp("");
-nlp.extend((Doc, world) => {
-  Doc.prototype.extractTech = function () {
-    return this.match("(#Skill|#Tech|#Title)");
-  };
-});
-
 /**
- * Extracts structured entities from text using rule-based and dictionary matching.
+ * Dynamic skill / role extraction via local spaCy NER (Hugging Face skill-extractor).
+ * Requires server/skill_extractor_server.py running (see package.json "skill-server").
+ *
+ * URL resolution:
+ * - If VITE_SKILL_EXTRACTOR_URL is set → use it (any environment).
+ * - Else in dev → /skill-api (Vite proxies to the Python server; see vite.config.js).
+ * - Else (production build) → direct http://127.0.0.1:8765 (set env for real deployments).
  */
-export const extractLocalEntities = (text = "") => {
-  if (!text) return { skills: [], experience: 0, titles: [] };
+function getSkillExtractorBaseUrl() {
+  const explicit = import.meta.env.VITE_SKILL_EXTRACTOR_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, '');
+  if (import.meta.env.DEV) return '/skill-api';
+  return 'http://127.0.0.1:8765';
+}
 
-  const normalized = text.toLowerCase();
-  const nlpDoc = nlp(normalized);
+const normalizeSkillKey = (s) =>
+  String(s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 
-  // 1. Extract Skills (dictionary matching with word boundaries)
-  const skills = TECH_SKILLS.filter(skill => {
-    const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    return regex.test(normalized);
-  });
-
-  // 2. Extract Titles
-  const titles = JOB_TITLES.filter(title => {
-    const regex = new RegExp(`\\b${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    return regex.test(normalized);
-  });
-
-  // 3. Extract Years of Experience
-  // Look for patterns like "5 years", "3+ yrs", "8 years of experience"
-  let experience = 0;
-  const expMatch = nlpDoc.match("#Value (year|years|yr|yrs)").first().terms();
-  if (expMatch.length) {
-    const val = parseInt(expMatch.text());
-    if (!isNaN(val)) experience = val;
+export const normalizeProfileSkills = (profileSkills) => {
+  if (!profileSkills) return [];
+  if (typeof profileSkills === "string") {
+    return profileSkills
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
+  return profileSkills.map((s) => String(s).trim()).filter(Boolean);
+};
 
-  // 4. Extract Dynamic Nouns & Phrases (for broader matching)
-  const nouns = nlpDoc.nouns().out('array');
-  const adjectives = nlpDoc.adjectives().out('array');
-  
-  const dynamicTerms = [...nouns, ...adjectives]
-    .map(n => n.toLowerCase().trim())
-    .filter(n => n.length > 3 && !TECH_SKILLS.includes(n));
+export const buildResumeBlob = (resumeText, profileSkills = []) => {
+  const parts = [resumeText || "", normalizeProfileSkills(profileSkills).join(", ")].filter(
+    Boolean,
+  );
+  return parts.join("\n\n").slice(0, 12000);
+};
 
-  return {
-    skills: [...new Set(skills)],
-    experience,
-    titles: [...new Set(titles)],
-    nouns: [...new Set(dynamicTerms)],
-    rawLength: text.length,
-    phraseCount: nlpDoc.sentences().length
-  };
+export const buildJobBlob = (job) => {
+  const parts = [
+    job?.title || "",
+    job?.skills || "",
+    job?.description || "",
+  ].filter(Boolean);
+  return parts.join("\n\n").slice(0, 12000);
 };
 
 /**
- * Calculates a match score between resume and job entities.
+ * @param {string[]} texts
+ * @returns {Promise<Array<{ skills: string[], role_terms: string[], entities: Array<{text: string, label: string}> }>>}
  */
-export const calculateLocalMatchScore = (resumeText, job, profileSkills = []) => {
-  const resumeEntities = extractLocalEntities(resumeText);
-
-  // Normalize profileSkills if string, convert to array
-  const normalizedProfileSkills = (typeof profileSkills === "string" 
-    ? profileSkills.split(",").map(s => s.trim().toLowerCase()) 
-    : profileSkills.map(s => String(s).trim().toLowerCase())
-  ).filter(Boolean);
-
-  // Merge profile skills into resumeEntities.skills
-  resumeEntities.skills = [...new Set([...resumeEntities.skills, ...normalizedProfileSkills])];
-
-  const jobDescEntities = extractLocalEntities(job.description || "");
-  const jobExplicitSkills = (job.skills || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
-  
-  const jobEntities = {
-    skills: [...new Set([...jobExplicitSkills, ...jobDescEntities.skills])],
-    title: (job.title || "").toLowerCase()
-  };
-
-  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  // Skill Match (weighted heavily)
-  const matchedSkills = jobEntities.skills.filter(s => {
-    const regex = new RegExp(`\\b${escapeRegExp(s)}\\b`, 'i');
-    return resumeEntities.skills.includes(s) || regex.test(resumeText);
+export async function extractSkillModelBatch(texts) {
+  const base = getSkillExtractorBaseUrl();
+  const res = await fetch(`${base}/api/extract/batch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      texts: (texts || []).map((t) => String(t || "").slice(0, 12000)),
+    }),
   });
-  
-  const skillScore = jobEntities.skills.length > 0 
-    ? (matchedSkills.length / jobEntities.skills.length) * 60
-    : 30;
 
-  // Title/Keyword Match (fuzzy)
-  let titleScore = 0;
-  const normalizedTitle = jobEntities.title.replace(/[^a-z0-9]/g, " ");
-  const titleRegex = new RegExp(`\\b${escapeRegExp(normalizedTitle)}\\b`, 'i');
-  if (titleRegex.test(resumeText)) {
-    titleScore = 25;
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Skill extractor ${res.status}: ${detail || res.statusText}`);
+  }
+
+  const data = await res.json();
+  if (!Array.isArray(data?.results)) {
+    throw new Error("Skill extractor returned invalid payload");
+  }
+  return data.results;
+}
+
+const tokenizeWords = (text) =>
+  (text || "")
+    .toLowerCase()
+    .split(/[^a-z0-9+#./]+/)
+    .filter((w) => w.length > 2);
+
+function flattenResumeKeys(displayResumeSkills) {
+  const flat = new Set();
+  for (const s of displayResumeSkills) {
+    const k = normalizeSkillKey(s);
+    if (k) flat.add(k);
+    for (const part of k.split(/[,/]/).map((p) => p.trim()).filter(Boolean)) {
+      if (part.length > 1) flat.add(part.toLowerCase());
+    }
+    for (const w of k.split(/\s+/)) {
+      if (w.length > 2) flat.add(w);
+    }
+  }
+  return flat;
+}
+
+function fuzzyJobMatchesResume(jobSkillNorm, resumeKeysFlat) {
+  if (!jobSkillNorm || !resumeKeysFlat.size) return false;
+  if (resumeKeysFlat.has(jobSkillNorm)) return true;
+
+  for (const rk of resumeKeysFlat) {
+    if (!rk) continue;
+    if (jobSkillNorm === rk) return true;
+    if (
+      jobSkillNorm.length >= 3 &&
+      rk.length >= 3 &&
+      (jobSkillNorm.includes(rk) || rk.includes(jobSkillNorm))
+    ) {
+      return true;
+    }
+    const ja = jobSkillNorm.split(/\s+/).filter((p) => p.length > 1);
+    const ra = rk.split(/\s+/).filter((p) => p.length > 1);
+    if (ja.length && ra.length) {
+      const setR = new Set(ra);
+      const inter = ja.filter((p) => setR.has(p)).length;
+      const union = new Set([...ja, ...ra]).size;
+      if (union > 0 && inter / union >= 0.5) return true;
+    }
+  }
+  return false;
+}
+
+function partitionJobSkills(jobSkillList, displayResumeSkills) {
+  const resumeKeysFlat = flattenResumeKeys(displayResumeSkills);
+  const matched = [];
+  const missing = [];
+
+  for (const js of jobSkillList) {
+    const jn = normalizeSkillKey(js);
+    if (!jn) continue;
+    if (fuzzyJobMatchesResume(jn, resumeKeysFlat)) matched.push(js);
+    else missing.push(js);
+  }
+
+  return { matched: [...new Set(matched)], missing: [...new Set(missing)] };
+}
+
+function jaccardTokens(a, b) {
+  const sa = new Set(tokenizeWords(a));
+  const sb = new Set(tokenizeWords(b));
+  if (!sa.size || !sb.size) return 0;
+  let inter = 0;
+  for (const t of sa) if (sb.has(t)) inter++;
+  return inter / (sa.size + sb.size - inter);
+}
+
+function titleAlignmentScore(resumeText, jobTitle) {
+  const title = (jobTitle || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ");
+  const words = title.split(/\s+/).filter((w) => w.length > 2);
+  if (!words.length) return 0;
+  const low = (resumeText || "").toLowerCase();
+  const hits = words.filter((w) => {
+    const re = new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    return re.test(low);
+  });
+  return hits.length / words.length;
+}
+
+function roleOverlapScore(rJob, rResume) {
+  const a = (rJob || []).map(normalizeSkillKey).filter(Boolean);
+  const b = (rResume || []).map(normalizeSkillKey).filter(Boolean);
+  if (!a.length || !b.length) return 0;
+  let hits = 0;
+  for (const x of a) {
+    for (const y of b) {
+      if (x === y || (x.length >= 4 && y.length >= 4 && (x.includes(y) || y.includes(x)))) {
+        hits++;
+        break;
+      }
+    }
+  }
+  return hits / a.length;
+}
+
+/**
+ * Score from precomputed NER outputs (use with extractSkillModelBatch).
+ */
+export function scoreFromExtracts(
+  resumeEx,
+  jobEx,
+  resumeText,
+  job,
+  profileSkills = [],
+) {
+  const profileList = normalizeProfileSkills(profileSkills);
+  const nerResumeSkills = [...(resumeEx?.skills || [])];
+  const nerJobSkills = [...(jobEx?.skills || [])];
+
+  const explicitJobSkills = (job?.skills || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const jobSkillList = [...new Set([...nerJobSkills, ...explicitJobSkills])];
+
+  const displayResumeSkills = [...new Set([...nerResumeSkills, ...profileList])];
+
+  const { matched, missing } = partitionJobSkills(jobSkillList, displayResumeSkills);
+
+  const jobSkillCount = new Set(jobSkillList.map(normalizeSkillKey).filter(Boolean)).size || 1;
+  const skillRatio = Math.min(1, matched.length / jobSkillCount);
+  const skillScore = skillRatio * 52;
+
+  let roleChannel = 0;
+  if (jobEx?.role_terms?.length && resumeEx?.role_terms?.length) {
+    roleChannel = roleOverlapScore(jobEx.role_terms, resumeEx.role_terms);
   } else {
-    const titleWords = normalizedTitle.split(" ").filter(w => w.length > 3);
-    const wordMatches = titleWords.filter(w => {
-       const wRegex = new RegExp(`\\b${escapeRegExp(w)}\\b`, 'i');
-       return wRegex.test(resumeText);
-    });
-    titleScore = titleWords.length > 0 ? (wordMatches.length / titleWords.length) * 20 : 0;
+    roleChannel = titleAlignmentScore(resumeText, job?.title);
   }
+  const roleScore = roleChannel * 20;
 
-  // Broad Keyword Overlap (Safety net for 0% issues)
-  const resumeTokens = new Set(resumeText.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 3));
-  const jobTokens = job.description?.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 3) || [];
-  const overlapCount = jobTokens.filter(t => resumeTokens.has(t)).length;
-  const overlapRatio = jobTokens.length > 0 ? Math.min(1, overlapCount / 20) : 0;
-  const broadMatchScore = overlapRatio * 10;
+  const descLex = jaccardTokens(resumeText, job?.description || "") * 16;
 
-  // Detail Match (Dynamic nouns from description)
-  const matchedDetails = jobDescEntities.nouns.filter(n => {
-    const nRegex = new RegExp(`\\b${escapeRegExp(n)}\\b`, 'i');
-    return nRegex.test(resumeText);
-  });
+  const baseline = 8;
+  const total = Math.min(99, Math.round(baseline + skillScore + roleScore + descLex));
 
-  const detailScore = jobDescEntities.nouns.length > 0
-    ? (matchedDetails.length / Math.min(10, jobDescEntities.nouns.length)) * 20
-    : 10;
+  const textQuality = Math.min(
+    1,
+    ((resumeText || "").length / 1200) * 0.45 + ((job?.description || "").length / 2000) * 0.45 + 0.1,
+  );
+  const extractorSignal =
+    (nerResumeSkills.length + nerJobSkills.length > 0 ? 0.35 : 0) + Math.min(0.35, skillRatio);
+  const confidenceScore = Math.round(
+    Math.min(100, textQuality * 38 + extractorSignal * 45 + skillRatio * 25 + 7),
+  );
 
-  // Minimum Baseline Score (Ensures no discouraging 0%)
-  const baseline = 15;
+  const displayMatched = [...new Set([...matched])].slice(0, 24);
+  const displayMissing = [...new Set([...missing])].slice(0, 24);
 
-  const totalScore = Math.min(99, Math.round(baseline + skillScore + titleScore + broadMatchScore + detailScore));
-
-  const missingSkills = jobEntities.skills.filter(s => !matchedSkills.includes(s));
-  
-  // Combine explicit skills with some significant detail matches for the UI
-  const displaySkills = [...new Set([...matchedSkills, ...matchedDetails.slice(0, 3)])];
-
-  // Calculate NER Confidence (Accuracy metric)
-  const textQuality = Math.min(1, (resumeText.length / 1000) * 0.5 + (job.description?.length / 1000) * 0.5);
-  const matchDensity = jobEntities.skills.length > 0 ? (matchedSkills.length / jobEntities.skills.length) : 0.5;
-  const confidenceScore = Math.round((textQuality * 40) + (matchDensity * 50) + 10);
-
-  const summaryMsg = displaySkills.length > 0
-    ? `Local Analysis: Matched ${displaySkills.length} key requirements discovered in the job description and metadata.`
-    : `Local Analysis: Review focuses on ${jobEntities.title} role requirements. Broad semantic match: ${Math.round(totalScore)}%.`;
+  const summaryMsg =
+    displayMatched.length > 0
+      ? `NER match: ${displayMatched.length} of ${jobSkillList.length} job skills align with the resume (model + listing).`
+      : jobSkillList.length > 0
+        ? `NER match: Few explicit overlaps yet; lexical signals score ~${total}%.`
+        : `NER match: Limited labeled skills in posting; score leans on description fit.`;
 
   return {
-    score: totalScore,
-    confidence: Math.min(100, confidenceScore),
-    matchedSkills: displaySkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-    missingSkills: missingSkills.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-    summary: summaryMsg
+    score: total,
+    confidence: confidenceScore,
+    matchedSkills: displayMatched.map(
+      (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(),
+    ),
+    missingSkills: displayMissing.map(
+      (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(),
+    ),
+    summary: summaryMsg,
   };
-};
+}
+
+/**
+ * Pure lexical fallback when the Python NER service is unreachable.
+ */
+export function scoreLexicalOnly(resumeText, job, profileSkills = []) {
+  const profileList = normalizeProfileSkills(profileSkills);
+  const jobParts = [
+    ...(job?.skills || "").split(",").map((s) => s.trim()).filter(Boolean),
+    ...tokenizeWords(job?.description),
+    ...tokenizeWords(job?.title),
+  ];
+  const jobTok = new Set(jobParts.map((t) => t.toLowerCase()));
+  const resumeTok = new Set([
+    ...tokenizeWords(resumeText),
+    ...profileList.map((s) => s.toLowerCase()),
+  ]);
+
+  let overlap = 0;
+  for (const t of jobTok) if (resumeTok.has(t)) overlap++;
+
+  const denom = Math.max(jobTok.size, 1);
+  const ratio = Math.min(1, overlap / Math.sqrt(denom + 1) / 6);
+  const skillScore = ratio * 55;
+  const titleScore = titleAlignmentScore(resumeText, job?.title) * 22;
+  const baseline = 10;
+  const total = Math.min(99, Math.round(baseline + skillScore + titleScore));
+
+  return {
+    score: total,
+    confidence: Math.round(32 + ratio * 40),
+    matchedSkills: [],
+    missingSkills: [],
+    summary:
+      "Skill NER service unavailable; approximate score from text overlap only. Start the Python skill-server.",
+  };
+}
+
+/** Single resume vs job round-trip (not batched). */
+export async function calculateLocalMatchScore(resumeText, job, profileSkills = []) {
+  try {
+    const batch = await extractSkillModelBatch([
+      buildResumeBlob(resumeText, profileSkills),
+      buildJobBlob(job),
+    ]);
+    return scoreFromExtracts(batch[0], batch[1], resumeText, job, profileSkills);
+  } catch {
+    return scoreLexicalOnly(resumeText, job, profileSkills);
+  }
+}
