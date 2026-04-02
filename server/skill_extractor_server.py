@@ -28,11 +28,21 @@ async def lifespan(app: FastAPI):
     nlp = None
 
 
+def _parse_cors_origins() -> list[str]:
+    """Comma-separated origins, or * for any. Stripped; empty parts ignored."""
+    raw = (os.environ.get("CORS_ORIGINS") or "*").strip()
+    if raw == "*":
+        return ["*"]
+    return [p.strip() for p in raw.split(",") if p.strip()]
+
+
+# Browsers cannot use allow_credentials=True with allow_origins=["*"] (Starlette rejects it).
+# This API does not rely on cookies; credentials off lets * work for Vercel (and preflight OPTIONS).
 app = FastAPI(title="Skill extractor", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
-    allow_credentials=True,
+    allow_origins=_parse_cors_origins(),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
