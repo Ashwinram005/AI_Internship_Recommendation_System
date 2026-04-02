@@ -119,8 +119,8 @@ Render sets **`PORT`**; `run_server.py` listens on **`0.0.0.0`** when `PORT` is 
 2. Add a **service** from that repo (or open the generated service) → **Settings**:
    - **Root Directory** → `server`  
      (so only `server/requirements.txt` and the Python app are built; avoids installing the whole Node monorepo as the app.)
-   - **Build**: use the included **`server/Dockerfile`** (recommended). Railway will run `docker build` and install deps with `pip` from the official Python image.  
-     **Do not** set a manual **Build Command** like `pip install -r requirements.txt` unless you know the image has `pip` on `PATH` — Nixpacks sometimes fails with `sh: 1: pip: not found` (exit 127).
+   - **Build**: use the included **`server/Dockerfile`**. The repo root **`railway.json`** sets the builder to **Dockerfile**, points at **`server/Dockerfile`**, and sets **`buildCommand` to `null`** so Railway stops using a stale dashboard build step (e.g. `pip install -r requirements.txt`, which triggers **`pip: not found`** / exit 127 when `pip` is not on `PATH`).  
+     If a deploy still runs `pip install` in logs, open **Settings → Build** and **clear** the custom build command, then redeploy after pulling **`railway.json`**.
    - **Start Command**: leave empty when using Docker (`CMD` in the Dockerfile runs `python run_server.py`). For Nixpacks-only deploys, use `python run_server.py` or the **`server/Procfile`** (`web: python run_server.py`).
 3. **Variables** (same idea as Render):
    - **`CORS_ORIGINS`** = your Vercel origin, e.g. `https://your-app.vercel.app`
@@ -153,5 +153,6 @@ Railway injects **`PORT`**; `run_server.py` already binds to **`0.0.0.0`** when 
 - **`src/services/localNerService.js`** — `getSkillExtractorBaseUrl()` and `extractSkillModelBatch()`.
 - **`server/skill_extractor_server.py`** — FastAPI app, CORS, `/api/extract/batch`, `/health`.
 - **`server/Dockerfile`** — Railway/Docker build so `pip install` runs inside a Python image (avoids `pip: not found` on Nixpacks).
+- **`railway.json`** (repo root) — forces **Dockerfile** builder and clears custom **Build Command** so Railway does not run bare `pip install` on Railpack/Nixpacks.
 
 Firebase (Auth + Firestore) remains separate: configured via `VITE_FIREBASE_*` in `.env` and `src/firebase.js`. The skill extractor does **not** replace Firebase; it only enriches matching scores in the browser.
