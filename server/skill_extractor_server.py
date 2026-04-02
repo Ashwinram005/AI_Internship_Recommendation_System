@@ -93,6 +93,20 @@ def _extract_one(text: str) -> dict:
     }
 
 
+@app.get("/")
+def root():
+    """So the deployed base URL (e.g. Railway) is not a 404 when opened in a browser."""
+    return {
+        "service": "skill-extractor",
+        "status": "ok",
+        "endpoints": {
+            "health": "/health",
+            "batch_extract": {"method": "POST", "path": "/api/extract/batch"},
+            "openapi": "/docs",
+        },
+    }
+
+
 @app.get("/health")
 def health():
     return {"ok": bool(nlp)}

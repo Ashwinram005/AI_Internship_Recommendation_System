@@ -113,6 +113,23 @@ For **frontend only** (no Python): `npm run dev:vite`. To run the API alone: `np
 
 Render sets **`PORT`**; `run_server.py` listens on **`0.0.0.0`** when `PORT` is present. Set **`CORS_ORIGINS`** to your Vercel URL (comma-separated if needed). First deploy may take several minutes while the Hugging Face model downloads — use a plan with enough RAM for spaCy + the model.
 
+### Example: Railway (Python — good when Render image/size limits bite)
+
+1. [Railway](https://railway.app) → **New Project** → **Deploy from GitHub** → select **`AI_Internship_Recommendation_System`** (or your repo).
+2. Add a **service** from that repo (or open the generated service) → **Settings**:
+   - **Root Directory** → `server`  
+     (so only `server/requirements.txt` and the Python app are built; avoids installing the whole Node monorepo as the app.)
+   - **Start Command** (if not auto): `python run_server.py`  
+     A **`server/Procfile`** with `web: python run_server.py` is included so Railway/Nixpacks can pick it up.
+3. **Variables** (same idea as Render):
+   - **`CORS_ORIGINS`** = your Vercel origin, e.g. `https://your-app.vercel.app`
+   - Optional: **`HF_TOKEN`** if Hugging Face rate-limits downloads.
+4. **Resources**: give the service **enough RAM** (spaCy + model); scale up if the deploy crashes or OOMs during model load.
+5. **Networking** → generate a **public URL** (e.g. `*.up.railway.app`).
+6. Put that URL in **Vercel** as **`VITE_SKILL_EXTRACTOR_URL`** (no trailing slash) and redeploy the frontend.
+
+Railway injects **`PORT`**; `run_server.py` already binds to **`0.0.0.0`** when `PORT` is set.
+
 ---
 
 ## Troubleshooting
@@ -124,6 +141,7 @@ Render sets **`PORT`**; `run_server.py` listens on **`0.0.0.0`** when `PORT` is 
 | **502 / ECONNREFUSED** on `/skill-api/...` in dev | Nothing listening on `8765` | Start the skill server; or set `VITE_SKILL_EXTRACTOR_PROXY_TARGET` if it runs elsewhere. |
 | CORS errors when using a **full** `VITE_SKILL_EXTRACTOR_URL` | API blocks browser origin | Set `CORS_ORIGINS` on the Python app to include your SPA origin. |
 | Production site never gets NER scores | Built without `VITE_SKILL_EXTRACTOR_URL` and users cannot reach `127.0.0.1:8765` | Set `VITE_SKILL_EXTRACTOR_URL` to your deployed API before `npm run build`. |
+| **`{"detail":"Not Found"}`** at the API **root** (`/`) | Older deploys had no route for `/` (only `/health` and `/api/...`). | Use **`GET /health`** for health checks; redeploy so **`GET /`** returns service metadata (see `skill_extractor_server.py`). |
 
 ---
 
