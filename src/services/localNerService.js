@@ -79,6 +79,16 @@ const tokenizeWords = (text) =>
     .split(/[^a-z0-9+#./]+/)
     .filter((w) => w.length > 2);
 
+/** Strips generic English / JD boilerplate so overlap scores reflect substance, not "the", "experience", etc. */
+const STOPWORDS = new Set([
+  "the", "and", "for", "are", "but", "not", "you", "all", "can", "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "its", "may", "new", "now", "old", "see", "two", "way", "who", "did", "let", "put", "say", "she", "too", "use", "any", "job", "jobs", "work", "team", "with", "from", "this", "that", "have", "will", "your", "what", "when", "where", "which", "while", "about", "after", "before", "being", "been", "more", "most", "some", "such", "than", "them", "then", "these", "those", "very", "just", "into", "over", "also", "back", "only", "know", "take", "year", "years", "good", "great", "make", "made", "need", "must", "well", "come", "each", "same", "here", "both", "such", "able",
+  "looking", "opportunity", "opportunities", "company", "companies", "role", "roles", "position", "positions", "candidate", "candidates", "required", "requirements", "requirement", "preferred", "preferably", "experience", "experiences", "responsibilities", "responsibility", "include", "including", "included", "ability", "abilities", "skills", "skill", "strong", "strongly", "excellent", "understanding", "degree", "degrees", "university", "college", "remote", "hybrid", "onsite", "full", "time", "part", "based", "join", "us", "best", "ideal", "seeking", "hire", "hiring", "apply", "application", "please", "equivalent", "related", "field", "fields", "other", "using", "used", "help", "support", "ensure", "across", "within", "without", "via", "etc",
+]);
+
+function tokenizeContentWords(text) {
+  return tokenizeWords(text).filter((w) => !STOPWORDS.has(w));
+}
+
 function flattenResumeKeys(displayResumeSkills) {
   const flat = new Set();
   for (const s of displayResumeSkills) {
@@ -136,8 +146,8 @@ function partitionJobSkills(jobSkillList, displayResumeSkills) {
 }
 
 function jaccardTokens(a, b) {
-  const sa = new Set(tokenizeWords(a));
-  const sb = new Set(tokenizeWords(b));
+  const sa = new Set(tokenizeContentWords(a));
+  const sb = new Set(tokenizeContentWords(b));
   if (!sa.size || !sb.size) return 0;
   let inter = 0;
   for (const t of sa) if (sb.has(t)) inter++;
@@ -146,7 +156,7 @@ function jaccardTokens(a, b) {
 
 function titleAlignmentScore(resumeText, jobTitle) {
   const title = (jobTitle || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ");
-  const words = title.split(/\s+/).filter((w) => w.length > 2);
+  const words = title.split(/\s+/).filter((w) => w.length > 2 && !STOPWORDS.has(w));
   if (!words.length) return 0;
   const low = (resumeText || "").toLowerCase();
   const hits = words.filter((w) => {
@@ -201,28 +211,49 @@ export function scoreFromExtracts(
   const skillRatio = Math.min(1, matched.length / jobSkillCount);
   const skillScore = skillRatio * 52;
 
+  const hasListedJobSkills = jobSkillList.length > 0;
+  const noSkillOverlap = hasListedJobSkills && matched.length === 0;
+
   let roleChannel = 0;
   if (jobEx?.role_terms?.length && resumeEx?.role_terms?.length) {
     roleChannel = roleOverlapScore(jobEx.role_terms, resumeEx.role_terms);
   } else {
     roleChannel = titleAlignmentScore(resumeText, job?.title);
   }
-  const roleScore = roleChannel * 20;
+  // Title/role signal is weaker when required skills do not overlap at all
+  const roleWeight = noSkillOverlap ? 10 : 20;
+  const roleScore = roleChannel * roleWeight;
 
-  const descLex = jaccardTokens(resumeText, job?.description || "") * 16;
+  let descLex = jaccardTokens(resumeText, job?.description || "") * 16;
+  if (noSkillOverlap) descLex *= 0.35;
 
-  const baseline = 8;
-  const total = Math.min(99, Math.round(baseline + skillScore + roleScore + descLex));
+  const resumeLen = (resumeText || "").trim().length;
+  const baseline = hasListedJobSkills ? (noSkillOverlap ? 0 : 5) : 8;
+  let total = Math.min(99, Math.round(baseline + skillScore + roleScore + descLex));
+
+  if (noSkillOverlap) {
+    total = Math.min(total, 26);
+  } else if (hasListedJobSkills && skillRatio < 0.25) {
+    total = Math.min(total, Math.round(total * 0.85));
+  }
+
+  if (resumeLen < 40 && !normalizeProfileSkills(profileSkills).length) {
+    total = Math.min(total, 12);
+  }
 
   const textQuality = Math.min(
     1,
-    ((resumeText || "").length / 1200) * 0.45 + ((job?.description || "").length / 2000) * 0.45 + 0.1,
+    (resumeLen / 1200) * 0.45 + ((job?.description || "").length / 2000) * 0.45 + 0.1,
   );
   const extractorSignal =
     (nerResumeSkills.length + nerJobSkills.length > 0 ? 0.35 : 0) + Math.min(0.35, skillRatio);
-  const confidenceScore = Math.round(
+  let confidenceScore = Math.round(
     Math.min(100, textQuality * 38 + extractorSignal * 45 + skillRatio * 25 + 7),
   );
+  if (noSkillOverlap) confidenceScore = Math.min(confidenceScore, 38);
+  if (resumeLen < 40 && !normalizeProfileSkills(profileSkills).length) {
+    confidenceScore = Math.min(confidenceScore, 22);
+  }
 
   const displayMatched = [...new Set([...matched])].slice(0, 24);
   const displayMissing = [...new Set([...missing])].slice(0, 24);
@@ -231,7 +262,9 @@ export function scoreFromExtracts(
     displayMatched.length > 0
       ? `NER match: ${displayMatched.length} of ${jobSkillList.length} job skills align with the resume (model + listing).`
       : jobSkillList.length > 0
-        ? `NER match: Few explicit overlaps yet; lexical signals score ~${total}%.`
+        ? noSkillOverlap
+          ? "NER match: No overlapping skills between this posting and your resume were found."
+          : `NER match: Partial overlap; estimated fit ~${total}%.`
         : `NER match: Limited labeled skills in posting; score leans on description fit.`;
 
   return {
@@ -252,15 +285,20 @@ export function scoreFromExtracts(
  */
 export function scoreLexicalOnly(resumeText, job, profileSkills = []) {
   const profileList = normalizeProfileSkills(profileSkills);
+  const listedSkills = (job?.skills || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.toLowerCase());
   const jobParts = [
-    ...(job?.skills || "").split(",").map((s) => s.trim()).filter(Boolean),
-    ...tokenizeWords(job?.description),
-    ...tokenizeWords(job?.title),
+    ...listedSkills,
+    ...tokenizeContentWords(job?.description),
+    ...tokenizeContentWords(job?.title),
   ];
-  const jobTok = new Set(jobParts.map((t) => t.toLowerCase()));
+  const jobTok = new Set(jobParts);
   const resumeTok = new Set([
-    ...tokenizeWords(resumeText),
-    ...profileList.map((s) => s.toLowerCase()),
+    ...tokenizeContentWords(resumeText),
+    ...profileList.map((s) => s.toLowerCase()).filter((s) => s && !STOPWORDS.has(s)),
   ]);
 
   let overlap = 0;
@@ -269,13 +307,27 @@ export function scoreLexicalOnly(resumeText, job, profileSkills = []) {
   const denom = Math.max(jobTok.size, 1);
   const ratio = Math.min(1, overlap / Math.sqrt(denom + 1) / 6);
   const skillScore = ratio * 55;
-  const titleScore = titleAlignmentScore(resumeText, job?.title) * 22;
-  const baseline = 10;
-  const total = Math.min(99, Math.round(baseline + skillScore + titleScore));
+  const titleScore = titleAlignmentScore(resumeText, job?.title) * 18;
+  const baseline = listedSkills.length ? 2 : 8;
+  const resumeLen = (resumeText || "").trim().length;
+  let total = Math.min(99, Math.round(baseline + skillScore + titleScore));
+
+  const hasExplicitSkills = listedSkills.length > 0;
+  const skillTokenOverlap = listedSkills.some((s) => resumeTok.has(s) || resumeTok.has(normalizeSkillKey(s)));
+  if (hasExplicitSkills && !skillTokenOverlap) {
+    total = Math.min(total, 24);
+  }
+  if (resumeLen < 40 && !profileList.length) {
+    total = Math.min(total, 12);
+  }
+
+  let confidence = Math.round(28 + ratio * 35);
+  if (hasExplicitSkills && !skillTokenOverlap) confidence = Math.min(confidence, 35);
+  if (resumeLen < 40 && !profileList.length) confidence = Math.min(confidence, 22);
 
   return {
     score: total,
-    confidence: Math.round(32 + ratio * 40),
+    confidence,
     matchedSkills: [],
     missingSkills: [],
     summary:

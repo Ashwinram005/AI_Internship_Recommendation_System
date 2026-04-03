@@ -189,23 +189,39 @@ export const rankJobsForResume = async ({ resume, jobs }) => {
     }, {});
 
     // Merge Groq results with fallback
-    return fallback.map((fbItem) => {
-      const gItem = groqMap[fbItem.jobId];
-      if (gItem) {
+    return fallback
+      .map((fbItem) => {
+        const gItem = groqMap[fbItem.jobId];
+        const job = safeJobs.find((j) => j.id === fbItem.jobId);
+        const jobHasListedSkills = getJobSkillList(job).length > 0;
+        const nerMatched = (fbItem.matchedSkills || []).length > 0;
+
+        if (gItem) {
+          let score = Math.max(0, Math.min(100, Number(gItem.score) || 0));
+          // When structured matching found zero overlapping skills, don't let the LLM report a strong fit
+          if (jobHasListedSkills && !nerMatched) {
+            const cap = Math.min(40, fbItem.score + 12);
+            score = Math.min(score, cap);
+          }
+
+          return {
+            jobId: gItem.jobId,
+            score,
+            confidence: Math.min(
+              92,
+              Number(gItem.confidence) || (nerMatched ? 72 : 48),
+            ),
+            matchedSkills: unique([...(fbItem.matchedSkills || []), ...(gItem.matchedSkills || [])]),
+            missingSkills: unique(gItem.missingSkills || []),
+            summary: gItem.summary || fbItem.summary,
+          };
+        }
         return {
-          jobId: gItem.jobId,
-          score: Math.max(0, Math.min(100, Number(gItem.score) || 0)),
-          confidence: Number(gItem.confidence) || 85, // AI default confidence
-          matchedSkills: unique([...(fbItem.matchedSkills || []), ...(gItem.matchedSkills || [])]),
-          missingSkills: unique(gItem.missingSkills || []),
-          summary: gItem.summary || fbItem.summary
+          ...fbItem,
+          confidence: fbItem.confidence ?? 70,
         };
-      }
-      return {
-        ...fbItem,
-        confidence: fbItem.confidence ?? 70,
-      };
-    }).sort((a, b) => b.score - a.score);
+      })
+      .sort((a, b) => b.score - a.score);
   } catch (err) {
     console.warn("Groq job ranking failed, using fallback:", err);
     return fallback;
