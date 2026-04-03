@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   RefreshCcw,
 } from "lucide-react";
+import PageLoader from "../../components/ui/PageLoader";
 import { getAllPostings } from "../../services/postingService";
 import { getAllUsers, getAllCompanies } from "../../services/userProfileService";
 
@@ -36,6 +37,19 @@ export default function AdminOverview() {
     };
     loadStats();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl">
+        <PageLoader
+          variant="embedded"
+          label="Loading dashboard"
+          sublabel="Fetching users, companies, and job listings…"
+          className="glass-card rounded-2xl min-h-[320px]"
+        />
+      </div>
+    );
+  }
 
   const cards = [
     {

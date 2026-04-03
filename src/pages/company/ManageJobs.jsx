@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Eye,
   FileText,
+  Loader2,
   Mail,
   UserRound,
   X,
@@ -410,8 +411,9 @@ export default function ManageJobs() {
               AI Ranking Activated
             </p>
             {rankingLoading ? (
-              <p className="text-xs text-indigo-600">
-                Scoring candidates against job description and resumes...
+              <p className="text-xs text-indigo-600 inline-flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" strokeWidth={2.5} aria-hidden />
+                Scoring candidates against job descriptions and resumes…
               </p>
             ) : (
               <p className="text-xs text-slate-500">

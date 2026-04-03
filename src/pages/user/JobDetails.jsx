@@ -7,11 +7,13 @@ import {
    CalendarDays,
    FileText,
    Globe,
+   Loader2,
    MapPin,
    Sparkles,
    WalletCards,
    X,
 } from "lucide-react";
+import PageLoader from "../../components/ui/PageLoader";
 import { useAuth } from "../../context/AuthContext";
 import {
    createApplication,
@@ -189,9 +191,12 @@ export default function JobDetails() {
    if (loading) {
       return (
          <div className="max-w-5xl">
-            <div className="glass-card p-8 text-sm text-slate-500">
-               Loading job details...
-            </div>
+            <PageLoader
+               variant="embedded"
+               label="Loading job details"
+               sublabel="Fetching the listing and your application status…"
+               className="glass-card rounded-2xl min-h-[280px]"
+            />
          </div>
       );
    }
@@ -381,9 +386,10 @@ export default function JobDetails() {
                               )}
                            </div>
                         ) : comparing ? (
-                           <div className="flex flex-col items-center justify-center py-4 space-y-2">
-                              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                              <span className="text-[11px] text-slate-500 font-medium">Analysing fit...</span>
+                           <div className="flex flex-col items-center justify-center py-6 gap-3">
+                              <Loader2 className="h-7 w-7 text-indigo-600 animate-spin" strokeWidth={2} aria-hidden />
+                              <span className="text-xs text-slate-600 font-medium">Analyzing resume fit…</span>
+                              <span className="text-[11px] text-slate-400 text-center max-w-[220px]">Matching skills and experience against this role.</span>
                            </div>
                         ) : (
                            <div className="space-y-4">

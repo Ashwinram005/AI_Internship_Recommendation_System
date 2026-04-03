@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PageLoader from "../components/ui/PageLoader";
 import { getDefaultRouteByRole } from "./routeUtils";
 
 export default function PublicRoute() {
@@ -9,9 +10,11 @@ export default function PublicRoute() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">
-        Loading...
-      </div>
+      <PageLoader
+        variant="fullscreen"
+        label="Loading"
+        sublabel="One moment…"
+      />
     );
   }
 

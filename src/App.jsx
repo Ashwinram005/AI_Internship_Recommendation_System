@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import PageLoader from "./components/ui/PageLoader";
 import AILanding from "./pages/AILanding";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -35,9 +36,11 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">
-        Loading...
-      </div>
+      <PageLoader
+        variant="fullscreen"
+        label="Preparing your workspace"
+        sublabel="Verifying your session securely…"
+      />
     );
   }
 

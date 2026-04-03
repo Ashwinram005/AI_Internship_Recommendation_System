@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
+  Loader2,
   Zap,
   Sparkles,
   CalendarDays,
@@ -240,27 +241,42 @@ export default function JobMatcher() {
               <button
                 onClick={runMatch}
                 disabled={!selectedId || analyzing}
-                className="saas-btn saas-btn-primary py-2.5 px-6"
+                className="saas-btn saas-btn-primary py-2.5 px-6 inline-flex items-center justify-center gap-2"
               >
-                <Zap size={16} className={analyzing ? "animate-pulse" : ""} />
-                {analyzing ? "Analyzing..." : "Find Matches"}
+                {analyzing ? (
+                  <Loader2 size={16} className="animate-spin shrink-0" aria-hidden />
+                ) : (
+                  <Zap size={16} className="shrink-0" aria-hidden />
+                )}
+                {analyzing ? "Analyzing…" : "Find Matches"}
               </button>
             </div>
 
             {analyzing && (
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-slate-600">{progressMsg}</p>
-                  <span className="text-lg font-bold text-[var(--color-primary)]">
+              <div className="rounded-xl border border-slate-200/90 bg-white/80 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.06)] p-5 space-y-4 mt-2">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 rounded-xl bg-[var(--color-primary-soft)] p-3 ring-1 ring-[var(--color-primary)]/10">
+                    <Loader2
+                      className="h-6 w-6 text-[var(--color-primary)] animate-spin"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800">Running AI match analysis</p>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{progressMsg}</p>
+                  </div>
+                  <span className="text-xl font-bold text-[var(--color-primary)] tabular-nums shrink-0">
                     {progress}%
                   </span>
                 </div>
                 <div className="progress-bar-container">
                   <div
-                    className="progress-bar-fill bg-[var(--color-primary)]"
+                    className="progress-bar-fill bg-[var(--color-primary)] transition-[width] duration-300 ease-out"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
+                <p className="text-[11px] text-slate-400">NER extraction and ranking may take a few seconds on first load.</p>
               </div>
             )}
           </div>

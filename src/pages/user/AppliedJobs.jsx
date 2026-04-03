@@ -18,6 +18,7 @@ import {
   ChevronUp,
   Search,
 } from "lucide-react";
+import PageLoader from "../../components/ui/PageLoader";
 
 export default function AppliedJobs() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function AppliedJobs() {
   const [expandedId, setExpandedId] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const STATUS_FLOW = [
     "submitted",
@@ -45,6 +47,7 @@ export default function AppliedJobs() {
   useEffect(() => {
     const load = async () => {
       try {
+        setLoading(true);
         if (!user?.uid) return;
 
         const [userApps, jobsSnap] = await Promise.all([
@@ -57,6 +60,8 @@ export default function AppliedJobs() {
       } catch (err) {
         console.error("Failed to load applications:", err);
         setError("Could not load applications. Please refresh.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -140,6 +145,19 @@ export default function AppliedJobs() {
 
   const activePipelineCount =
     applications.length - (statusCounts.withdrawn + statusCounts.rejected);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <PageLoader
+          variant="embedded"
+          label="Loading applications"
+          sublabel="Syncing your submissions with active listings…"
+          className="glass-card rounded-2xl min-h-[380px]"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

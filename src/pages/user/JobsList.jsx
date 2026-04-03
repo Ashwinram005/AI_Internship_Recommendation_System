@@ -15,6 +15,7 @@ import {
   Search,
   WalletCards,
 } from "lucide-react";
+import PageLoader from "../../components/ui/PageLoader";
 import { useAuth } from "../../context/AuthContext";
 import { getApplicationsByUser } from "../../services/applicationService";
 import { getVisiblePostingsForCandidates } from "../../services/postingService";
@@ -102,6 +103,19 @@ export default function JobsList() {
       year: "numeric",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <PageLoader
+          variant="embedded"
+          label="Loading opportunities"
+          sublabel="Fetching the latest roles and your application status…"
+          className="glass-card rounded-2xl min-h-[400px] bg-[var(--color-surface)]"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
