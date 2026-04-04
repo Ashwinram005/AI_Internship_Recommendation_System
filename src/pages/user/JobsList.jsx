@@ -31,6 +31,7 @@ export default function JobsList() {
   const [page, setPage] = useState(1);
   const pageSize = 8;
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -51,6 +52,8 @@ export default function JobsList() {
       } catch (err) {
         console.error("Failed to load jobs:", err);
         setError("Failed to load jobs. Please refresh.");
+      } finally {
+        setLoading(false);
       }
     };
 
